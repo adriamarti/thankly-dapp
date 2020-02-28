@@ -1,0 +1,1 @@
+First steps following indications: https://forum.openzeppelin.com/t/advanced-gsn-gsnrecipientsignature-sol/1414
