@@ -3,7 +3,7 @@ const Web3 = require("web3");
 const chai = require("chai");
 const { utils: { toBN } } = require("web3");
 const web3 = new Web3("ws://localhost:8545");
-const { signMessage } = require("../signServer/utils/signUtils.js");
+const { signMessage } = require("../../signServer/utils/signUtils.js");
 const expect = chai.expect;
 
 const mochaAsync = fn => {
@@ -29,7 +29,7 @@ describe("loading express", async () => {
 
     beforeEach(() => {
         delete require.cache[require.resolve("../signServer/index.js")];
-        server = require("../signServer/index.js");
+        server = require("../../signServer/index.js");
     });
 
     afterEach(done => {

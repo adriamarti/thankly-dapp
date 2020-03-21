@@ -2,8 +2,9 @@ pragma solidity ^ 0.5.0;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/GSNRecipientSignature.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
-contract Counter is Initializable, GSNRecipientSignature {
+contract Counter is Initializable, GSNRecipientSignature, Ownable {
   //it keeps a count to demonstrate stage changes
   uint private count;
   address private _owner;
@@ -13,7 +14,7 @@ contract Counter is Initializable, GSNRecipientSignature {
   public initializer { 
     GSNRecipientSignature.initialize(trustedSigner); 
     _owner = _msgSender(); 
-    _owner = msg.sender; 
+    // _owner = msg.sender; 
     count = num; 
   }
 

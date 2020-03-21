@@ -87,3 +87,5 @@ Truffle can run tests written in Solidity or JavaScript against your smart contr
 cd client
 npm run start
 ```
+
+Note: check https://forum.openzeppelin.com/t/advanced-gsn-gsnrecipientsignature-sol/1414 for more details about what it's implemented.
