@@ -1,158 +1,325 @@
 pragma solidity ^ 0.5.0;
 
+import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol";
 
 /**
  * @title ThanklyToken
- * @dev This is the Token Smart Contract that will be used to create Tokens for the different companies
- * @notice This smart contract define the data and logic around the token.
- *         This smart contract is inspired by https://eips.ethereum.org/EIPS/eip-20
+ * @dev This is the Token Smart Contract that will be used to create
+ *      tokens for the different companies
  */
 
-contract ThanklyToken {
+contract ThanklyToken is Initializable, Ownable {
 
-  address private owner;
-  mapping (bytes32 => uint256) public balance;
-  mapping (bytes32 => bool) public registered;
-  string public name;
-  string public symbol;
-  uint256 public totalSupply;
+  //-------------------------------- //
+  // STORAGE
+  //-------------------------------- //
 
-  event RegisteredWorker(bytes32 id);
-  event TransferedTokensFromCompanyToWorker(bytes32 to, uint256 amount);
-  event TransferedTokensBetweenWorkers(bytes32 from, bytes32 to, uint256 amount);
-  event BurnedTokens(bytes32 from, uint256 amount);
+  // The percentage that the contract charges to the company for mining tokens
+  uint256 public sellingPercentage;
+
+  // The value of the token
+  uint256 public tokenValueConversion;
+
+  struct Token {
+    string name;
+    string symbol;
+    uint256 totalSupply;
+    bool active;
+    bool registered;
+    mapping (bytes32 => uint256) workerBalance;
+  }
+
+  mapping (address => Token) public companyToken;
+  mapping (bytes32 => address) public workerCompanyAddress;
+  mapping (address => bool) private trustedSigner;
+
+  //-------------------------------- //
+  // EVENTS
+  //-------------------------------- //
+
+  event SellingPercentageModified(uint256 percentage);
+  event TokenValueConversionModified(uint256 value);
+  event TokenCreated(string name, string symbol);
+  event TokenActiveStatusChanged(bool newActiveStatus, address tokenOwnerAddress);
+  event WorkerResgistered(bytes32 id, address tokenOwnerAddress);
+  event TokensTransferedToWorker(bytes32 id, uint256 amount);
+
+  //-------------------------------- //
+  // MODIFIERS
+  //-------------------------------- //
 
   /**
-   * @dev Verify valid owner
+   * @dev Verify sellingPercentageDefined is defined
    */
-  modifier onlyOwner(address _owner) {
-    require (owner == _owner);
+  modifier sellingPercentageDefined() {
+    require (sellingPercentage > 0);
     _;
   }
 
   /**
-   * @dev Verify worker is registered
+   * @dev Verify tokenValueConversion is defined
    */
-  modifier isRegistered(bytes32 _id) {
-    require (registered[_id] == true);
+  modifier tokenValueConversionDefined() {
+    require (tokenValueConversion > 0);
     _;
   }
 
   /**
-   * @dev Verify worker is not registered
+   * @dev Verify that company has a token registered
    */
-  modifier isNotRegistered(bytes32 _id) {
-    require (registered[_id] == false);
+  modifier registeredToken() {
+    require (companyToken[msg.sender].registered == true);
     _;
   }
 
   /**
-   * @dev Verify worker has enough tokens to transfer
-   * @param _id Id of the company worker from the DB
-   * @param _amount Amount willing to tranfer
+   * @dev Verify that company has an active token
+   * @param _companyAddress Address of the company
    */
-  modifier enoughTokens(bytes32 _id, uint256 _amount) {
-    require (balance[_id] >= _amount);
+  modifier activeToken(address _companyAddress) {
+    require (companyToken[msg.sender].active == true);
     _;
   }
 
   /**
-   * @dev The constructor of the contract to initialize it with some data
-   * @notice Intitialize the ownable logic
-   * @param _name Name of the token given by the company
-   * @param _symbol Symbol of the token given by the company
+   * @dev Verify that company has an inactive token
+   * @param _companyAddress Address of the company
    */
-  constructor(string memory _name, string memory _symbol)
+  modifier inactiveToken(address _companyAddress) {
+    require (companyToken[_companyAddress].active == false);
+    _;
+  }
+
+  /**
+   * @dev Verify that is not already registered for that company
+   * @param _workerId worker id from the DB
+   * @param _companyAddress Address of the company
+   */
+  modifier workerUnregistered(bytes32 _workerId, address _companyAddress) {
+    require (workerCompanyAddress[_workerId] != _companyAddress);
+    _;
+  }
+
+  /**
+   * @dev Verify that is already registered for that company
+   * @param _workerId worker id from the DB
+   * @param _companyAddress Address of the company
+   */
+  modifier workerRegistered(bytes32 _workerId, address _companyAddress) {
+    require (workerCompanyAddress[_workerId] == _companyAddress);
+    _;
+  }
+
+  /**
+   * @dev Verify caller as a trsuted signer
+   * @param _trustedAddress trusted address
+   */
+  modifier verifyCaller(address _trustedAddress) {
+    require (trustedSigner[_trustedAddress] == true);
+    _;
+  }
+
+  /**
+   * @dev Verify that paid amount is enough
+   * @param _amount amount of tokens to buy
+   */
+  modifier paidEnough(uint256 _amount) {
+    uint256 transactionCost = _amount * tokenValueConversion;
+    uint256 transactionFee = transactionCost * sellingPercentage / 100;
+    require(msg.value >= transactionCost + transactionFee);
+    _;
+  }
+
+  /**
+   * @dev Refund extra costs of the process if needed
+   * @param _amount amount of tokens to buy
+   */
+  modifier refundExtraCosts(uint256 _amount) {
+    _;
+    uint256 transactionCost = _amount * tokenValueConversion;
+    uint256 transactionFee = transactionCost * sellingPercentage / 100;
+    uint256 amountToRefund = msg.value - transactionCost - transactionFee;
+    msg.sender.transfer(amountToRefund);
+  }
+
+  //-------------------------------- //
+  // SETTERS
+  //-------------------------------- //
+  
+  // Initializer function (replaces constructor)
+  /**
+   * @dev Initializer function (replaces constructor)
+   * @param _owner Defines the owner of the contract
+   */
+  function initialize(address _owner)
     public
+    initializer
   {
-    name = _name;
-    symbol = _symbol;
-    totalSupply = 0;
-    owner = msg.sender;
+    Ownable.initialize(_owner);
   }
 
   /**
-   * @dev Create new tokens and transfer to the company worker
-   * @param _id Id of the company worker from the DB
-   * @return Success register
+   * @dev Set Selling Value (only owner of the contract)
+   * @param _value selling value of the token
    */
-  function registerWorker(bytes32 _id)
+  function setSellingPercentage(uint256 _value)
     public
-    onlyOwner(msg.sender)
-    isNotRegistered(_id)
+    onlyOwner
+  {
+    sellingPercentage = _value;
+
+    emit SellingPercentageModified(_value);
+  }
+
+  /**
+   * @dev Set Token value conversion (only owner of the contract)
+   * @param _value selling value of the token
+   */
+  function setTokenValueConversion(uint256 _value)
+    public
+    onlyOwner
+  {
+    tokenValueConversion = _value;
+
+    emit TokenValueConversionModified(_value);
+  }
+
+  /**
+   * @dev Set trusted signer (it's the platform address)
+   * @param _trustedSigner address of contract addres who calls transfer
+   */
+  function setTrustedSigner(address _trustedSigner)
+    public
+    onlyOwner
+  {
+    trustedSigner[_trustedSigner] = true;
+  }
+
+  /**
+   * @dev Create a new token by a company
+   * @param _name Id of the company worker from the DB
+   * @param _symbol Id of the company worker from the DB
+   * @return Success token creation
+   */
+  function createToken(string memory _name, string memory _symbol)
+    public
+    sellingPercentageDefined
     returns (bool)
   {
-    registered[_id] = true;
-    balance[_id] = 0;
+    companyToken[msg.sender].name = _name;
+    companyToken[msg.sender].symbol = _symbol;
+    companyToken[msg.sender].active = true;
+    companyToken[msg.sender].registered = true;
 
-    emit RegisteredWorker(_id);
+    emit TokenCreated(_name, _symbol);
 
     return true;
   }
 
   /**
-   * @dev Create new tokens and transfer to the company worker
-   * @param _to Id of the company worker from the DB
-   * @param _amount Amount to transfer to the company worker
-   * @return Success transfer
+   * @dev Create a new token by a company
+   * @param _newActiveStatus New status of the company token (true|false)
+   * @return Success token active status changed
    */
-  function transferTokensFromCompanyToWorker(bytes32 _to, uint256 _amount)
+  function setTokenActive(bool _newActiveStatus)
+    public
+    registeredToken
+    returns (bool)
+  {
+    if (_newActiveStatus == true) {
+      _setTokenAsActive(msg.sender);
+    } else {
+      _setTokenAsInactive(msg.sender);
+    }
+
+    emit TokenActiveStatusChanged(_newActiveStatus, msg.sender);
+
+    return true;
+  }
+
+  /**
+   * @dev Set company token as active (internal function)
+   * @param _companyAddress Address of the company owner of the token
+   */
+  function _setTokenAsActive(address _companyAddress)
+    internal
+    inactiveToken(_companyAddress)
+  {
+    companyToken[_companyAddress].active = true;
+  }
+
+  /**
+   * @dev Set company token as inactive (internal function)
+   * @param _companyAddress Address of the company owner of the token
+   */
+  function _setTokenAsInactive(address _companyAddress)
+    internal
+    activeToken(_companyAddress)
+  {
+    companyToken[_companyAddress].active = false;
+  }
+
+  /**
+   * @dev Register a new company worker inside the company token
+   * @param _workerId Id of the company worker from DB
+   * @return Success registered company worker
+   */
+  function registerWorker(bytes32 _workerId)
+    public
+    activeToken(msg.sender)
+    workerUnregistered(_workerId, msg.sender)
+    returns (bool)
+  {
+    companyToken[msg.sender].workerBalance[_workerId] = 0;
+    workerCompanyAddress[_workerId] = msg.sender;
+
+    emit WorkerResgistered(_workerId, msg.sender);
+
+    return true;
+  }
+
+  /**
+   * @dev Register a new company worker inside the company token
+   * @param _workerId Id of the company worker from DB
+   * @param _amount Amount of tokens transfered to worker
+   * @return Success transaction of tokens to worker
+   */
+  function transferTokensToWorker(bytes32 _workerId, uint256 _amount)
     public
     payable
-    onlyOwner(msg.sender)
-    isRegistered(_to)
+    activeToken(msg.sender)
+    tokenValueConversionDefined
+    workerRegistered(_workerId, msg.sender)
+    paidEnough(_amount)
+    refundExtraCosts(_amount)
     returns (bool)
   {
-    // Need to do the operation previously to transfer money to the Thankly Platform
-    balance[_to] += _amount;
-    totalSupply += totalSupply + _amount;
+    companyToken[msg.sender].totalSupply += _amount;
+    companyToken[msg.sender].workerBalance[_workerId] += _amount;
 
-    emit TransferedTokensFromCompanyToWorker(_to, _amount);
+    emit TokensTransferedToWorker(_workerId, _amount);
 
     return true;
   }
+
+  //-------------------------------- //
+  // GETTERS
+  //-------------------------------- //
 
   /**
-   * @dev Transfer token from worker to another worker
-   * @param _to Id of the company worker from the DB
-   * @param _from Id of the company worker from the DB
-   * @param _amount Amount to transfer to the company worker
-   * @return Success transfer
+   * @dev Get the worker balance
+   * @param _workerId Id of the company worker from DB
+   * @param _companyAddress Company address
+   * @return Worker Token Balance
    */
-  function transferTokensFromWorkerToWorker(bytes32 _from, bytes32 _to, uint256 _amount)
+  function workerBalance(bytes32 _workerId, address _companyAddress)
     public
-    isRegistered(_from)
-    isRegistered(_to)
-    enoughTokens(_from, _amount)
-    returns (bool)
+    view
+    workerRegistered(_workerId, _companyAddress)
+    returns (uint256)
   {
-    balance[_to] += _amount;
-    balance[_from] -= _amount;
-
-    emit TransferedTokensBetweenWorkers(_from, _to, _amount);
-
-    return true;
+    return companyToken[_companyAddress].workerBalance[_workerId];
   }
-
-  /**
-   * @dev Burn tokens
-   * @param _from Id of the company worker from the DB
-   * @param _amount Amount to transfer to the company worker
-   * @return Success bruned tokens
-   */
-  function burnTokens(bytes32 _from, uint256 _amount)
-    public
-    isRegistered(_from)
-    enoughTokens(_from, _amount)
-    returns (bool)
-  {
-    balance[_from] -= _amount;
-
-    emit BurnedTokens(_from, _amount);
-
-    return true;
-  }
-
   
 }

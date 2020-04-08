@@ -10,8 +10,9 @@ contract Counter is Initializable, GSNRecipientSignature, Ownable {
   address private _owner;
 
   function initialize(uint num, address trustedSigner) 
-    
-  public initializer { 
+    public
+    initializer
+  { 
     GSNRecipientSignature.initialize(trustedSigner); 
     _owner = _msgSender(); 
     // _owner = msg.sender; 
@@ -29,30 +30,45 @@ contract Counter is Initializable, GSNRecipientSignature, Ownable {
   }
 
   // getter
-  function getCounter() public view returns (uint) {
+  function getCounter()
+    public
+    view
+    returns (uint)
+  {
     return count;
   }
 
   //and it can add to a count
-  function increaseCounter(uint256 amount) public {
+  function increaseCounter(uint256 amount)
+    public
+  {
     count = count + amount;
   }
 
   //We'll upgrade the contract with this function after deploying it
   //Function to decrease the counter
-  function decreaseCounter(uint256 amount) public returns (bool) {
+  function decreaseCounter(uint256 amount)
+    public
+    returns (bool)
+  {
     require(count > amount, "Cannot be lower than 0");
     count = count - amount;
     return true;
   }
 
-  function setRelayHubAddress() public {
+  function setRelayHubAddress()
+    public
+  {
     if(getHubAddr() == address(0)) {
       _upgradeRelayHub(0xD216153c06E857cD7f72665E0aF1d7D82172F494);
     }
   }
 
-  function getRecipientBalance() public view returns (uint) {
+  function getRecipientBalance()
+    public
+    view
+    returns (uint)
+  {
     return IRelayHub(getHubAddr()).balanceOf(address(this));
   }
 

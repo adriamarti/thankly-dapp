@@ -1,263 +1,450 @@
-const { BN, expectEvent, expectRevert } = require('openzeppelin-test-helpers');
-const web3 = require('web3');
+const {
+  BN,
+  expectEvent,
+  expectRevert,
+  balance
+} = require('openzeppelin-test-helpers');
+const Web3 = require('Web3');
 const { ObjectId } = require('mongoose').Types;
 const ThanklyToken = artifacts.require('ThanklyToken');
+const web3 = new Web3(Web3.givenProvider || 'ws://127.0.0.1:7545');
 
 contract('ThanklyToken', (accounts) => {
-  let token;
-  const company = accounts[0];
-  const otherAccount = accounts[1];
+  let thanklyToken;
+  const initialSellingPercentage = 10;
+  const initialTokenValueConversion = Web3.utils.toWei('1', 'shannon');
+  const owner = accounts[0];
+  const company = accounts[1];
+  const otherAccount = accounts[2];
+  const trustedAccount = accounts[3];
   const currencyName = 'Claire Joster Coins';
   const currencySymbol = 'CJC';
+  const workerId1 = Web3.utils.sha3(ObjectId().toString());
+  const workerId2 = Web3.utils.sha3(ObjectId().toString());
+  const amountToTransferFromCompanyToWorker = 10;
+  const amountToTransferFromWorkerToWorker = 5;
 
   beforeEach(async () => {
-    token = await ThanklyToken.new(currencyName, currencySymbol, { from: company });
+    thanklyToken = await ThanklyToken.new({ from: owner });
+  })
+  
+  describe('initialize() is called', () => {
+    beforeEach(async () => {
+      await thanklyToken.initialize(owner);
+    })
+
+    it(`should have transferred the ownership to ${owner} if not previously initialized`, async () => {
+      const newOwner = await thanklyToken.owner()
+
+      assert.equal(owner, newOwner);
+    })
+
+    it('should revert if the contract is already initialized', async () => {
+      await expectRevert.unspecified(
+        thanklyToken.initialize(owner)
+      );
+    })
   })
 
-  describe.only(`Created Token with "${currencyName}" as the currencyName param and "${currencySymbol}" as the currencySymbol param`, () => {
-    it(`should create a new token with the name "${currencyName}"`, async () => {
-      const createdTokenName = await token.name();
+  describe('setSellingPercentage() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
 
-      assert.equal(createdTokenName, currencyName);
-    })
-
-    it(`should create a new token with the symbol "${currencySymbol}"`, async () => {
-      const createdTokenSymbol = await token.symbol();
-
-      assert.equal(createdTokenSymbol, currencySymbol);
-    })
-
-    it('should create a new token with an initial total supply of 0', async () => {
-      const createdTokenTotalSupply= await token.totalSupply();
-
-      assert.equal(createdTokenTotalSupply, 0);
-    })
-
-    describe('registerWorker method', () => {
-      describe('called by the owner of the token', () => {
-        it('should register a new worker with a balance of 0 tokens', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          await token.registerWorker(workerId, { from: company });
-          const isWorkerRegiestered = await token.registered(workerId);
-          const workeRBalance = await token.balance(workerId);
-    
-          assert.equal(isWorkerRegiestered, true);
-          assert.equal(workeRBalance, 0);
-        })
-
-        it('should emmit an event', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const { logs } = await token.registerWorker(workerId, { from: company });
-
-          expectEvent.inLogs(logs, 'RegisteredWorker', { id: workerId });
+      describe('and it\'s called by the owner', () => {
+        it(`should set to ${initialSellingPercentage}% the sellingPercentage`, async () => {
+          await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+          const sellingPercentage = await thanklyToken.sellingPercentage();
+          assert.equal(sellingPercentage, initialSellingPercentage);
         })
       })
 
-      describe('NOT called by the owner of the token', () => {
+      describe('and it\'s NOT called by the owner', () => {
+        it(`should revert the transaction`, async () => {
+          await expectRevert.unspecified(
+            thanklyToken.setSellingPercentage(initialSellingPercentage, { from: otherAccount })
+          );
+        })
+      })
+    })
+
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner })
+        );
+      })
+    })
+  })
+
+  describe('setTokenValueConversion() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
+
+      describe('and it\'s called by the owner', () => {
+        it(`should set to ${initialTokenValueConversion} the tokenValueConversion`, async () => {
+          await thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner });
+          const tokenValueConversion = await thanklyToken.tokenValueConversion();
+          assert.equal(tokenValueConversion, initialTokenValueConversion);
+        })
+      })
+
+      describe('and it\'s NOT called by the owner', () => {
+        it(`should revert the transaction`, async () => {
+          await expectRevert.unspecified(
+            thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: otherAccount })
+          );
+        })
+      })
+    })
+
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner })
+        );
+      })
+    })
+  })
+
+  describe('setTrustedSigner() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
+
+      describe('and it\'s called by the owner', () => {
+        it(`should set to ${otherAccount} as a trusted signer account`, async () => {
+          const { receipt } = await thanklyToken.setTrustedSigner(otherAccount, { from: owner });
+          assert.equal(receipt.status, true);
+        })
+      })
+
+      describe('and it\'s NOT called by the owner', () => {
+        it(`should revert the transaction`, async () => {
+          await expectRevert.unspecified(
+            thanklyToken.setTrustedSigner(otherAccount, { from: otherAccount })
+          );
+        })
+      })
+    })
+
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.setTrustedSigner(otherAccount, { from: owner })
+        );
+      })
+    })
+  })
+
+  describe('createToken() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
+
+      describe('and selling percetage is already defined', () => {
+        beforeEach(async () => {
+          await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+        })
+
+        it(`should create a token with name: ${currencyName}`, async () => {
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
+          const { name } = await thanklyToken.companyToken(company)
+          assert.equal(name, currencyName);
+        })
+
+        it('should create a token with active: true', async () => {
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
+          const { active } = await thanklyToken.companyToken(company)
+          assert.equal(active, true);
+        })
+
+        it('should create a token with initialValue: 0', async () => {
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
+          const { totalSupply } = await thanklyToken.companyToken(company)
+          assert.equal(totalSupply.toJSON(), 0);
+        })
+
+        it('should create a token with registered: true', async () => {
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
+          const { registered } = await thanklyToken.companyToken(company)
+          assert.equal(registered, true);
+        })
+      })
+
+      describe('and selling percetage is NOT already defined', () => {
         it('should revert the transaction', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          
           await expectRevert.unspecified(
-            token.registerWorker(workerId, { from: otherAccount })
+            thanklyToken.createToken(currencyName, currencySymbol, { from: company })
           );
-        })
-      })
-
-      describe('called by owner of the token', () => {
-        it('should register a new worker with a balance of 0 tokens', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          await token.registerWorker(workerId, { from: company });
-          const isWorkerRegiestered = await token.registered(workerId);
-          const workeRBalance = await token.balance(workerId);
-    
-          assert.equal(isWorkerRegiestered, true);
-          assert.equal(workeRBalance, 0);
         })
       })
     })
 
-    describe('transferTokensFromCompanyToWorker method', () => {
-      describe('called by the owner of the token', () => {
-        it('should increase the balance if the worker is alreay registered', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount = new BN(12);
-          await token.registerWorker(workerId, { from: company });
-          await token.transferTokensFromCompanyToWorker(workerId, amount, { from: company });
-          const workerBalance = await token.balance(workerId);
-          
-          assert.equal(workerBalance.toString(), amount.toString());
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.createToken(currencyName, currencySymbol, { from: company })
+        );
+      })
+    })
+  })
+
+  describe('setTokenActive() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
+
+      describe('and token exists', () => {
+        beforeEach(async () => {
+          await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
         })
 
-        it('should increase the total supply if the worker is alreay registered', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount = new BN(12);
-          await token.registerWorker(workerId, { from: company });
-          await token.transferTokensFromCompanyToWorker(workerId, amount, { from: company });
-          const totalSupply = await token.totalSupply();
-          
-          assert.equal(amount.toString(), totalSupply.toString());
+        it('should change the active if different from the current one', async () => {
+          const newActiveStatus = false;
+          await thanklyToken.setTokenActive(newActiveStatus, { from: company })
+          const { active } = await thanklyToken.companyToken(company)
+          assert.equal(active, newActiveStatus);
         })
 
-        it('should emmit an event if the worker is alreay registered', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount = new BN(12);
-          await token.registerWorker(workerId, { from: company });
-          const { logs } = await token.transferTokensFromCompanyToWorker(workerId, amount, { from: company });
-
-          expectEvent.inLogs(
-            logs,
-            'TransferedTokensFromCompanyToWorker',
-            { to: workerId, amount }
-          );
-        })
-
-        it('should revert the transaction if the worker is NOT registered', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount = new BN(12);
-
+        it('should revert the transaction if equal from the current one', async () => {
           await expectRevert.unspecified(
-            token.transferTokensFromCompanyToWorker(workerId, amount, { from: company })
+            thanklyToken.setTokenActive(true, { from: company })
           );
         })
       })
 
-      describe('NOT called by the owner of the token', () => {
+      describe('and token does NOT exist', () => {
         it('should revert the transaction', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount = new BN(12);
-          await token.registerWorker(workerId, { from: company });
-          
           await expectRevert.unspecified(
-            token.transferTokensFromCompanyToWorker(workerId, amount, { from: otherAccount }
-          ));
-        })
-      })
-    })
-
-    describe('transferTokensFromWorkerToWorker method', () => {
-      describe('called by a trusted address', () => {
-        it('should transfer tokens to another registered worker if enough funds', async () => {
-          const workerId1 = web3.utils.sha3(ObjectId().toString());
-          const workerId2 = web3.utils.sha3(ObjectId().toString());
-          const amount1 = new BN(12);
-          const amount2 = new BN(8);
-          await token.registerWorker(workerId1, { from: company });
-          await token.registerWorker(workerId2, { from: company });
-          await token.transferTokensFromCompanyToWorker(workerId1, amount1, { from: company });
-          await token.transferTokensFromWorkerToWorker(workerId1, workerId2, amount2);
-          const worker1Balance = await token.balance(workerId1);
-          const worker2Balance = await token.balance(workerId2);
-          const newWorker1Balance = (+amount1.toString()) - (+amount2.toString())
-          
-          assert.equal(worker1Balance.toString(), newWorker1Balance.toString());
-          assert.equal(worker2Balance.toString(), amount2.toString());
-        })
-
-        it('should emmit an event if tokens are transfered to another registered worker', async () => {
-          const workerId1 = web3.utils.sha3(ObjectId().toString());
-          const workerId2 = web3.utils.sha3(ObjectId().toString());
-          const amount1 = new BN(12);
-          const amount2 = new BN(8);
-          await token.registerWorker(workerId1, { from: company });
-          await token.registerWorker(workerId2, { from: company });
-          await token.transferTokensFromCompanyToWorker(workerId1, amount1, { from: company });
-          const { logs } = await token.transferTokensFromWorkerToWorker(workerId1, workerId2, amount2);
-
-          expectEvent.inLogs(
-            logs,
-            'TransferedTokensBetweenWorkers',
-            { from: workerId1, to: workerId2, amount: amount2 }
-          );
-        })
-
-        it('should revert the transaction if the worker emitter is NOT registered', async () => {
-          const workerId1 = web3.utils.sha3(ObjectId().toString());
-          const workerId2 = web3.utils.sha3(ObjectId().toString());
-          const amount = new BN(12);
-
-          await expectRevert.unspecified(
-            token.transferTokensFromWorkerToWorker(workerId1, workerId2, amount)
-          );
-        })
-
-        it('should revert the transaction if the worker receiver is NOT registered', async () => {
-          const workerId1 = web3.utils.sha3(ObjectId().toString());
-          const workerId2 = web3.utils.sha3(ObjectId().toString());
-          const amount = new BN(12);
-          await token.registerWorker(workerId1, { from: company });
-
-          await expectRevert.unspecified(
-            token.transferTokensFromWorkerToWorker(workerId1, workerId2, amount)
-          );
-        })
-
-        it('should revert the transaction if the worker emisor does not have enough funds', async () => {
-          const workerId1 = web3.utils.sha3(ObjectId().toString());
-          const workerId2 = web3.utils.sha3(ObjectId().toString());
-          const amount1 = new BN(8);
-          const amount2 = new BN(12);
-          await token.registerWorker(workerId1, { from: company });
-          await token.registerWorker(workerId2, { from: company });
-          await token.transferTokensFromCompanyToWorker(workerId1, amount1, { from: company });
-
-          await expectRevert.unspecified(
-            token.transferTokensFromWorkerToWorker(workerId1, workerId2, amount2)
+            thanklyToken.setTokenActive(false, { from: company })
           );
         })
       })
     })
 
-    describe('burnTokens method', () => {
-      describe('called by a trusted address', () => {
-        it('should burn tokens from the worker if enough funds', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount1 = new BN(12);
-          const amount2 = new BN(8);
-          await token.registerWorker(workerId, { from: company });
-          await token.transferTokensFromCompanyToWorker(workerId, amount1, { from: company });
-          await token.burnTokens(workerId, amount2);
-          const workerBalance = await token.balance(workerId);
-          const newWorkerBalance = (+amount1.toString()) - (+amount2.toString())
-          
-          assert.equal(workerBalance.toString(), newWorkerBalance.toString());
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.setTokenActive(false, { from: company })
+        );
+      })
+    })
+  })
+
+  describe('registerWorker() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
+
+      describe('and token exists', () => {
+        beforeEach(async () => {
+          await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
         })
 
-        it('should emmit an event if tokens are burned from a registered worker', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount1 = new BN(12);
-          const amount2 = new BN(8);
-          await token.registerWorker(workerId, { from: company });
-          await token.transferTokensFromCompanyToWorker(workerId, amount1, { from: company });
-          const { logs } = await token.burnTokens(workerId, amount2);
+        describe('and token is active', () => {
+          describe('and worker is not already registered', () => {
+            beforeEach(async () => {
+              await thanklyToken.registerWorker(workerId1, { from: company })
+            })
 
-          expectEvent.inLogs(
-            logs,
-            'BurnedTokens',
-            { from: workerId, amount: amount2 }
-          );
+            it('should map the worker id with the company address', async () => {
+              const companyAddress = await thanklyToken.workerCompanyAddress(workerId1)
+              assert.equal(companyAddress, company);
+            })
+
+            it('should have an initial balance of 0 when calling workerBalance()', async () => {
+              const workerBalance = await thanklyToken.workerBalance(workerId1, company)
+              assert.equal(workerBalance, 0);
+            })
+          })
+
+          describe('and worker is already registered', () => {
+            beforeEach(async () => {
+              await thanklyToken.registerWorker(workerId1, { from: company })
+            })
+  
+            it('should revert the transaction', async () => {
+              await expectRevert.unspecified(
+                thanklyToken.registerWorker(workerId1, { from: company })
+              );
+            })
+          })
         })
 
-        it('should revert the transaction if the worker emitter is NOT registered', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount = new BN(12);
+        describe('and token is inactive', () => {
+          beforeEach(async () => {
+            await thanklyToken.setTokenActive(false, { from: company })
+          })
 
+          it('should revert the transaction', async () => {
+            await expectRevert.unspecified(
+              thanklyToken.registerWorker(workerId1, { from: company })
+            );
+          })
+        })
+      })
+
+      describe('and token does NOT exist', () => {
+        it('should revert the transaction', async () => {
           await expectRevert.unspecified(
-            token.burnTokens(workerId, amount)
-          );
-        })
-
-        it('should revert the transaction if the worker does not have enough funds', async () => {
-          const workerId = web3.utils.sha3(ObjectId().toString());
-          const amount1 = new BN(8);
-          const amount2 = new BN(12);
-          await token.registerWorker(workerId, { from: company });
-          await token.transferTokensFromCompanyToWorker(workerId, amount1, { from: company });
-
-          await expectRevert.unspecified(
-            token.burnTokens(workerId, amount2)
+            thanklyToken.registerWorker(workerId1, { from: company })
           );
         })
       })
     })
-  }) 
+
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.registerWorker(workerId1, { from: company })
+        );
+      })
+    })
+  })
+
+  describe.only('transferTokensToWorker() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
+
+      describe('and token exists', () => {
+        beforeEach(async () => {
+          await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
+        })
+
+        describe('and token is active', () => {
+          describe('and token conversion values is defined', () => {
+            beforeEach(async () => {
+              await thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner });
+            })
+
+            describe.only('and worker is already registered', () => {
+              beforeEach(async () => {
+                await thanklyToken.registerWorker(workerId1, { from: company })
+              })
+              
+              describe('and company has send enough ether for the transaction', () => {
+                it('should transfer tokens to the worker', async () => {
+                  const transacionCost = amountToTransferFromCompanyToWorker * initialTokenValueConversion;
+                  const transactionFee = transacionCost * initialSellingPercentage / 100;
+                  const totalTransactionCost = `${transacionCost + transactionFee}`;
+
+                  await thanklyToken.transferTokensToWorker(
+                    workerId1, amountToTransferFromCompanyToWorker,
+                    { from: company, value: totalTransactionCost }
+                  )
+
+                  const workerBalance = await thanklyToken.workerBalance(workerId1, company)
+                  assert.equal(workerBalance, amountToTransferFromCompanyToWorker);
+                  const contractBalance = await web3.eth.getBalance(thanklyToken.address);
+                  assert.equal(contractBalance, totalTransactionCost);
+                })
+              })
+
+              describe('and company has send to much ether for the transaction', () => {
+                it('should refund the extra ether to the sender', async () => {
+                  const transacionCost = amountToTransferFromCompanyToWorker * initialTokenValueConversion;
+                  const transactionFee = transacionCost * initialSellingPercentage / 100;
+                  const totalTransactionCost = `${transacionCost + transactionFee}`;
+                  const extraEtherTransaction = `${transacionCost + transactionFee + transactionFee }`
+
+                  await thanklyToken.transferTokensToWorker(
+                    workerId1, amountToTransferFromCompanyToWorker,
+                    { from: company, value: extraEtherTransaction }
+                  )
+
+                  const workerBalance = await thanklyToken.workerBalance(workerId1, company)
+                  assert.equal(workerBalance, amountToTransferFromCompanyToWorker);
+                  const contractBalance = await web3.eth.getBalance(thanklyToken.address);
+                  assert.equal(contractBalance, totalTransactionCost);
+                })
+              })
+
+              describe('and company has NOT send enough ether for the transaction', () => {
+                it('should revert the transaction', async () => {
+                  await expectRevert.unspecified(
+                    thanklyToken.transferTokensToWorker(
+                      workerId1, amountToTransferFromCompanyToWorker,
+                      { from: company, value: Web3.utils.toWei('1', 'shannon') }
+                    )
+                  );
+                })
+              })
+            })
+
+            describe('and worker is NOT registered', () => {
+              it('should revert the transaction', async () => {
+                await expectRevert.unspecified(
+                  thanklyToken.transferTokensToWorker(
+                    workerId1, amountToTransferFromCompanyToWorker, { from: company }
+                  )
+                );
+              })
+            })
+          })
+
+          describe('and token conversion values is NOT defined', () => {
+            it('should revert the transaction', async () => {
+              await expectRevert.unspecified(
+                thanklyToken.transferTokensToWorker(
+                  workerId1, amountToTransferFromCompanyToWorker, { from: company }
+                )
+              );
+            })
+          })
+        })
+
+        describe('and token is inactive', () => {
+          beforeEach(async () => {
+            await expectRevert.unspecified(
+              thanklyToken.transferTokensToWorker(
+                workerId1, amountToTransferFromCompanyToWorker, { from: company }
+              )
+            );
+          })
+
+          it('should revert the transaction', async () => {
+            await expectRevert.unspecified(
+              thanklyToken.transferTokensToWorker(
+                workerId1, amountToTransferFromCompanyToWorker, { from: company }
+              )
+            );
+          })
+        })
+      })
+
+      describe('and token does NOT exist', () => {
+        it('should revert the transaction', async () => {
+          await expectRevert.unspecified(
+            thanklyToken.transferTokensToWorker(
+              workerId1, amountToTransferFromCompanyToWorker, { from: trustedAccount }
+            )
+          );
+        })
+      })
+    })
+
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.transferTokensToWorker(
+            workerId1, amountToTransferFromCompanyToWorker, { from: trustedAccount }
+          )
+        );
+      })
+    })
+  })
+
 })
