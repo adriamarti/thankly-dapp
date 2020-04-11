@@ -164,12 +164,6 @@ contract('ThanklyToken', (accounts) => {
           assert.equal(active, true);
         })
 
-        it('should create a token with initialValue: 0', async () => {
-          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
-          const { totalSupply } = await thanklyToken.companyToken(company)
-          assert.equal(totalSupply.toJSON(), 0);
-        })
-
         it('should create a token with registered: true', async () => {
           await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
           const { registered } = await thanklyToken.companyToken(company)
@@ -262,9 +256,10 @@ contract('ThanklyToken', (accounts) => {
               assert.equal(companyAddress, company);
             })
 
-            it('should have an initial balance of 0 when calling workerBalance()', async () => {
-              const workerBalance = await thanklyToken.workerBalance(workerId1, company)
-              assert.equal(workerBalance, 0);
+            it('should have an initial balance of 0 (transferableTokens and burnableTokens) when calling workerBalance()', async () => {
+              const { transferableTokens, burnableTokens }  = await thanklyToken.workerBalance(workerId1, company)
+              assert.equal(transferableTokens, 0);
+              assert.equal(burnableTokens, 0);
             })
           })
 
@@ -312,7 +307,7 @@ contract('ThanklyToken', (accounts) => {
     })
   })
 
-  describe.only('transferTokensToWorker() is called', () => {
+  describe('transferTokensFromCompanyToWorker() is called', () => {
     describe('and the contract is already initialized', () => {
       beforeEach(async () => {
         await thanklyToken.initialize(owner);
@@ -330,7 +325,7 @@ contract('ThanklyToken', (accounts) => {
               await thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner });
             })
 
-            describe.only('and worker is already registered', () => {
+            describe('and worker is already registered', () => {
               beforeEach(async () => {
                 await thanklyToken.registerWorker(workerId1, { from: company })
               })
@@ -341,13 +336,13 @@ contract('ThanklyToken', (accounts) => {
                   const transactionFee = transacionCost * initialSellingPercentage / 100;
                   const totalTransactionCost = `${transacionCost + transactionFee}`;
 
-                  await thanklyToken.transferTokensToWorker(
+                  await thanklyToken.transferTokensFromCompanyToWorker(
                     workerId1, amountToTransferFromCompanyToWorker,
                     { from: company, value: totalTransactionCost }
                   )
 
-                  const workerBalance = await thanklyToken.workerBalance(workerId1, company)
-                  assert.equal(workerBalance, amountToTransferFromCompanyToWorker);
+                  const { transferableTokens }  = await thanklyToken.workerBalance(workerId1, company)
+                  assert.equal(transferableTokens, amountToTransferFromCompanyToWorker);
                   const contractBalance = await web3.eth.getBalance(thanklyToken.address);
                   assert.equal(contractBalance, totalTransactionCost);
                 })
@@ -360,13 +355,13 @@ contract('ThanklyToken', (accounts) => {
                   const totalTransactionCost = `${transacionCost + transactionFee}`;
                   const extraEtherTransaction = `${transacionCost + transactionFee + transactionFee }`
 
-                  await thanklyToken.transferTokensToWorker(
+                  await thanklyToken.transferTokensFromCompanyToWorker(
                     workerId1, amountToTransferFromCompanyToWorker,
                     { from: company, value: extraEtherTransaction }
                   )
 
-                  const workerBalance = await thanklyToken.workerBalance(workerId1, company)
-                  assert.equal(workerBalance, amountToTransferFromCompanyToWorker);
+                  const { transferableTokens }  = await thanklyToken.workerBalance(workerId1, company)
+                  assert.equal(transferableTokens, amountToTransferFromCompanyToWorker);
                   const contractBalance = await web3.eth.getBalance(thanklyToken.address);
                   assert.equal(contractBalance, totalTransactionCost);
                 })
@@ -375,7 +370,7 @@ contract('ThanklyToken', (accounts) => {
               describe('and company has NOT send enough ether for the transaction', () => {
                 it('should revert the transaction', async () => {
                   await expectRevert.unspecified(
-                    thanklyToken.transferTokensToWorker(
+                    thanklyToken.transferTokensFromCompanyToWorker(
                       workerId1, amountToTransferFromCompanyToWorker,
                       { from: company, value: Web3.utils.toWei('1', 'shannon') }
                     )
@@ -387,7 +382,7 @@ contract('ThanklyToken', (accounts) => {
             describe('and worker is NOT registered', () => {
               it('should revert the transaction', async () => {
                 await expectRevert.unspecified(
-                  thanklyToken.transferTokensToWorker(
+                  thanklyToken.transferTokensFromCompanyToWorker(
                     workerId1, amountToTransferFromCompanyToWorker, { from: company }
                   )
                 );
@@ -398,7 +393,7 @@ contract('ThanklyToken', (accounts) => {
           describe('and token conversion values is NOT defined', () => {
             it('should revert the transaction', async () => {
               await expectRevert.unspecified(
-                thanklyToken.transferTokensToWorker(
+                thanklyToken.transferTokensFromCompanyToWorker(
                   workerId1, amountToTransferFromCompanyToWorker, { from: company }
                 )
               );
@@ -409,7 +404,7 @@ contract('ThanklyToken', (accounts) => {
         describe('and token is inactive', () => {
           beforeEach(async () => {
             await expectRevert.unspecified(
-              thanklyToken.transferTokensToWorker(
+              thanklyToken.transferTokensFromCompanyToWorker(
                 workerId1, amountToTransferFromCompanyToWorker, { from: company }
               )
             );
@@ -417,7 +412,7 @@ contract('ThanklyToken', (accounts) => {
 
           it('should revert the transaction', async () => {
             await expectRevert.unspecified(
-              thanklyToken.transferTokensToWorker(
+              thanklyToken.transferTokensFromCompanyToWorker(
                 workerId1, amountToTransferFromCompanyToWorker, { from: company }
               )
             );
@@ -428,8 +423,8 @@ contract('ThanklyToken', (accounts) => {
       describe('and token does NOT exist', () => {
         it('should revert the transaction', async () => {
           await expectRevert.unspecified(
-            thanklyToken.transferTokensToWorker(
-              workerId1, amountToTransferFromCompanyToWorker, { from: trustedAccount }
+            thanklyToken.transferTokensFromCompanyToWorker(
+              workerId1, amountToTransferFromCompanyToWorker, { from: company }
             )
           );
         })
@@ -439,12 +434,297 @@ contract('ThanklyToken', (accounts) => {
     describe('and the contract is NOT already initialized', () => {
       it('should revert the transaction', async () => {
         await expectRevert.unspecified(
-          thanklyToken.transferTokensToWorker(
-            workerId1, amountToTransferFromCompanyToWorker, { from: trustedAccount }
+          thanklyToken.transferTokensFromCompanyToWorker(
+            workerId1, amountToTransferFromCompanyToWorker, { from: company }
           )
         );
       })
     })
   })
 
+  describe('transferTokensFromWorkerToWorker() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
+
+      describe('and token exists', () => {
+        beforeEach(async () => {
+          await thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner });
+          await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company })
+        })
+
+        describe('and token is active', () => {
+          describe('and worker emitter is already registered', () => {
+            beforeEach(async () => {
+              await thanklyToken.registerWorker(workerId1, { from: company });
+            })
+
+            describe('and worker receiver is already registered', () => {
+              beforeEach(async () => {
+                await thanklyToken.registerWorker(workerId2, { from: company });
+              })
+
+              describe('and worker emitter has enough tokens', () => {
+                beforeEach(async () => {
+                  const transacionCost = amountToTransferFromCompanyToWorker * initialTokenValueConversion;
+                  const transactionFee = transacionCost * initialSellingPercentage / 100;
+                  const totalTransactionCost = `${transacionCost + transactionFee}`;
+
+                  await thanklyToken.transferTokensFromCompanyToWorker(
+                    workerId1, amountToTransferFromCompanyToWorker,
+                    { from: company, value: totalTransactionCost }
+                  )
+                })
+
+                describe('and trusted signer is valid', () => {
+                  beforeEach(async () => {
+                    await thanklyToken.setTrustedSigner(trustedAccount, { from: owner })
+                  })
+
+                  it('should transfer tokens from worker emitter to worker receiver', async () => {
+                    const worker1InitialBalance = await thanklyToken.workerBalance(workerId1, company)
+                    const worker2InitialBalance = await thanklyToken.workerBalance(workerId2, company)
+                    await thanklyToken.transferTokensFromWorkerToWorker(
+                      workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+                    )
+                    const worker1EndBalance = await thanklyToken.workerBalance(workerId1, company)
+                    const worker2EndBalance = await thanklyToken.workerBalance(workerId2, company)
+  
+                    assert.equal(
+                      worker1InitialBalance.transferableTokens,
+                      (+worker1EndBalance.transferableTokens) + (+amountToTransferFromWorkerToWorker)
+                    );
+                    assert.equal(
+                      (+worker2InitialBalance.burnableTokens) + (+amountToTransferFromWorkerToWorker),
+                      worker2EndBalance.burnableTokens
+                    );
+                  })
+                })
+
+                describe('and trusted signer is NOT valid', () => {
+                  it('should revert the transaction', async () => {
+                    await expectRevert.unspecified(
+                      thanklyToken.transferTokensFromWorkerToWorker(
+                        workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+                      )
+                    );
+                  })
+                })
+              })
+
+              describe('and worker emitter do NOT have enough tokens', () => {
+                it('should revert the transaction', async () => {
+                  await expectRevert.unspecified(
+                    thanklyToken.transferTokensFromWorkerToWorker(
+                      workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+                    )
+                  );
+                })
+              })
+            })
+
+            describe('and worker receiver is NOT already registered', () => {
+              it('should revert the transaction', async () => {
+                await expectRevert.unspecified(
+                  thanklyToken.transferTokensFromWorkerToWorker(
+                    workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+                  )
+                );
+              })
+            })
+          })
+
+          describe('and worker emitter is NOT already registered', () => {
+            it('should revert the transaction', async () => {
+              await expectRevert.unspecified(
+                thanklyToken.transferTokensFromWorkerToWorker(
+                  workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+                )
+              );
+            })
+          })
+        });
+
+        describe('and token is inactive', () => {
+          beforeEach(async () => {
+            await expectRevert.unspecified(
+              thanklyToken.transferTokensFromWorkerToWorker(
+                workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+              )
+            );
+          })
+
+          it('should revert the transaction', async () => {
+            await expectRevert.unspecified(
+              thanklyToken.transferTokensFromWorkerToWorker(
+                workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+              )
+            );
+          })
+        })
+      })
+
+      describe('and token does NOT exist', () => {
+        it('should revert the transaction', async () => {
+          await expectRevert.unspecified(
+            thanklyToken.transferTokensFromWorkerToWorker(
+              workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+            )
+          );
+        })
+      })
+    })
+
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.transferTokensFromWorkerToWorker(
+            workerId1, workerId2, company, amountToTransferFromWorkerToWorker, { from: trustedAccount }
+          )
+        );
+      })
+    })
+  })
+
+  describe('burnTokens() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+      })
+
+      describe('and token exists', () => {
+        beforeEach(async () => {
+          await thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner });
+          await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+          await thanklyToken.createToken(currencyName, currencySymbol, { from: company });
+        })
+
+        describe('and token is active', () => {
+          describe('and worker is already registered', () => {
+            beforeEach(async () => {
+              await thanklyToken.registerWorker(workerId2, { from: company });
+              await thanklyToken.registerWorker(workerId1, { from: company });
+              await thanklyToken.setTrustedSigner(trustedAccount, { from: owner });
+            })
+
+            describe('and worker has enough burnable tokens', () => {
+              beforeEach(async () => {
+                const transacionCost = amountToTransferFromCompanyToWorker * initialTokenValueConversion;
+                const transactionFee = transacionCost * initialSellingPercentage / 100;
+                const totalTransactionCost = `${transacionCost + transactionFee}`;
+
+                await thanklyToken.transferTokensFromCompanyToWorker(
+                  workerId2, amountToTransferFromCompanyToWorker,
+                  { from: company, value: totalTransactionCost }
+                );
+                await thanklyToken.transferTokensFromWorkerToWorker(
+                  workerId2, workerId1, company, 1, { from: trustedAccount }
+                );
+              });
+
+              it ('should burn tokens from his account', async () => {
+                const workerInitialBalance = await thanklyToken.workerBalance(workerId1, company);
+                await thanklyToken.burnTokens(workerId1, company, 1, { from: trustedAccount });
+                const workerEndBalance = await thanklyToken.workerBalance(workerId1, company);
+
+                assert.equal(workerInitialBalance.burnableTokens, 1);
+                assert.equal(workerEndBalance.burnableTokens, 0);
+              })
+            });
+
+            describe('and worker has NOT enough burnable tokens', () => {
+              it('should revert the transaction', async () => {
+                await expectRevert.unspecified(
+                  thanklyToken.burnTokens(workerId1, company, 1, { from: trustedAccount })
+                );
+              })
+            });
+          })
+
+          describe('and worker is NOT already registered', () => {
+            it('should revert the transaction', async () => {
+              await expectRevert.unspecified(
+                thanklyToken.burnTokens(workerId1, company, 1, { from: trustedAccount })
+              );
+            })
+          })
+        });
+
+        describe('and token is inactive', () => {
+          beforeEach(async () => {
+            await expectRevert.unspecified(
+              thanklyToken.burnTokens(workerId1, company, 1, { from: trustedAccount })
+            );
+          })
+
+          it('should revert the transaction', async () => {
+            await expectRevert.unspecified(
+              thanklyToken.burnTokens(workerId1, company, 1, { from: trustedAccount })
+            );
+          })
+        })
+      })
+
+      describe('and token does NOT exist', () => {
+        it('should revert the transaction', async () => {
+          await expectRevert.unspecified(
+            thanklyToken.burnTokens(workerId1, company, 1, { from: trustedAccount })
+          );
+        })
+      })
+    })
+
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(
+          thanklyToken.burnTokens(workerId1, company, 1, { from: trustedAccount })
+        );
+      })
+    })
+  })
+
+  describe.only('withdraw() is called', () => {
+    describe('and the contract is already initialized', () => {
+      beforeEach(async () => {
+        await thanklyToken.initialize(owner);
+        await thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner });
+        await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+        await thanklyToken.createToken(currencyName, currencySymbol, { from: company });
+        await thanklyToken.registerWorker(workerId1, { from: company });
+        const transacionCost = amountToTransferFromCompanyToWorker * initialTokenValueConversion;
+        const transactionFee = transacionCost * initialSellingPercentage / 100;
+        const totalTransactionCost = `${transacionCost + transactionFee}`;
+
+        await thanklyToken.transferTokensFromCompanyToWorker(
+          workerId1, amountToTransferFromCompanyToWorker,
+          { from: company, value: totalTransactionCost }
+        );
+      })
+
+      describe('and it\'s called by the owner', () => {
+        it.only(`should withdraw funds from contract to owner`, async () => {
+          const contractInitialBalance = await web3.eth.getBalance(thanklyToken.address);
+          await thanklyToken.withdraw(amountToTransferFromCompanyToWorker, { from: owner });
+          const contractEndBalance = await web3.eth.getBalance(thanklyToken.address);
+          console.log('contractInitialBalance: ', contractInitialBalance)
+          console.log('contractEndBalance: ', contractEndBalance)
+          assert.equal(true, true);
+        })
+      })
+
+      describe('and it\'s NOT called by the owner', () => {
+        it(`should revert the transaction`, async () => {
+          await expectRevert.unspecified(thanklyToken.withdraw(10, { from: otherAccount }));
+        })
+      })
+    })
+
+    describe('and the contract is NOT already initialized', () => {
+      it('should revert the transaction', async () => {
+        await expectRevert.unspecified(thanklyToken.withdraw(10, { from: owner }));
+      })
+    })
+  })
 })

@@ -24,10 +24,10 @@ contract ThanklyToken is Initializable, Ownable {
   struct Token {
     string name;
     string symbol;
-    uint256 totalSupply;
     bool active;
     bool registered;
-    mapping (bytes32 => uint256) workerBalance;
+    mapping (bytes32 => uint256) transferableTokens;
+    mapping (bytes32 => uint256) burnableTokens;
   }
 
   mapping (address => Token) public companyToken;
@@ -43,7 +43,10 @@ contract ThanklyToken is Initializable, Ownable {
   event TokenCreated(string name, string symbol);
   event TokenActiveStatusChanged(bool newActiveStatus, address tokenOwnerAddress);
   event WorkerResgistered(bytes32 id, address tokenOwnerAddress);
-  event TokensTransferedToWorker(bytes32 id, uint256 amount);
+  event TokensTransferedFromCompanyToWorker(bytes32 id, uint256 amount);
+  event TokensTransferedFromWorkerToWorker(bytes32 from, bytes32 to, uint256 amount);
+  event TokensBurned(bytes32 id, uint256 amount);
+  event Withdraw(uint256 amount);
 
   //-------------------------------- //
   // MODIFIERS
@@ -78,7 +81,7 @@ contract ThanklyToken is Initializable, Ownable {
    * @param _companyAddress Address of the company
    */
   modifier activeToken(address _companyAddress) {
-    require (companyToken[msg.sender].active == true);
+    require (companyToken[_companyAddress].active == true);
     _;
   }
 
@@ -113,10 +116,9 @@ contract ThanklyToken is Initializable, Ownable {
 
   /**
    * @dev Verify caller as a trsuted signer
-   * @param _trustedAddress trusted address
    */
-  modifier verifyCaller(address _trustedAddress) {
-    require (trustedSigner[_trustedAddress] == true);
+  modifier verifyCaller() {
+    require (trustedSigner[msg.sender] == true);
     _;
   }
 
@@ -141,6 +143,30 @@ contract ThanklyToken is Initializable, Ownable {
     uint256 transactionFee = transactionCost * sellingPercentage / 100;
     uint256 amountToRefund = msg.value - transactionCost - transactionFee;
     msg.sender.transfer(amountToRefund);
+  }
+
+  /**
+   * @dev Verify that worker has enough tokens to transfer
+   * @param _workerId worker id from the DB
+   * @param _companyAddress Address of the company
+   * @param _amount Amount willing to transfer/burn
+   */
+  modifier enoughTransferableTokens(bytes32 _workerId, address _companyAddress, uint256 _amount) {
+    (uint256 transferableTokens,) = workerBalance(_workerId, _companyAddress);
+    require(transferableTokens >= _amount);
+    _;
+  }
+
+  /**
+   * @dev Verify that worker has enough tokens to burn
+   * @param _workerId worker id from the DB
+   * @param _companyAddress Address of the company
+   * @param _amount Amount willing to transfer/burn
+   */
+  modifier enoughBurnableTokens(bytes32 _workerId, address _companyAddress, uint256 _amount) {
+    (,uint256 burnableTokens) = workerBalance(_workerId, _companyAddress);
+    require(burnableTokens >= _amount);
+    _;
   }
 
   //-------------------------------- //
@@ -205,7 +231,6 @@ contract ThanklyToken is Initializable, Ownable {
   function createToken(string memory _name, string memory _symbol)
     public
     sellingPercentageDefined
-    returns (bool)
   {
     companyToken[msg.sender].name = _name;
     companyToken[msg.sender].symbol = _symbol;
@@ -213,19 +238,15 @@ contract ThanklyToken is Initializable, Ownable {
     companyToken[msg.sender].registered = true;
 
     emit TokenCreated(_name, _symbol);
-
-    return true;
   }
 
   /**
    * @dev Create a new token by a company
    * @param _newActiveStatus New status of the company token (true|false)
-   * @return Success token active status changed
    */
   function setTokenActive(bool _newActiveStatus)
     public
     registeredToken
-    returns (bool)
   {
     if (_newActiveStatus == true) {
       _setTokenAsActive(msg.sender);
@@ -234,8 +255,6 @@ contract ThanklyToken is Initializable, Ownable {
     }
 
     emit TokenActiveStatusChanged(_newActiveStatus, msg.sender);
-
-    return true;
   }
 
   /**
@@ -263,29 +282,25 @@ contract ThanklyToken is Initializable, Ownable {
   /**
    * @dev Register a new company worker inside the company token
    * @param _workerId Id of the company worker from DB
-   * @return Success registered company worker
    */
   function registerWorker(bytes32 _workerId)
     public
     activeToken(msg.sender)
     workerUnregistered(_workerId, msg.sender)
-    returns (bool)
   {
-    companyToken[msg.sender].workerBalance[_workerId] = 0;
+    companyToken[msg.sender].transferableTokens[_workerId] = 0;
+    companyToken[msg.sender].burnableTokens[_workerId] = 0;
     workerCompanyAddress[_workerId] = msg.sender;
 
     emit WorkerResgistered(_workerId, msg.sender);
-
-    return true;
   }
 
   /**
-   * @dev Register a new company worker inside the company token
+   * @dev Transfer tokens from company to worker
    * @param _workerId Id of the company worker from DB
    * @param _amount Amount of tokens transfered to worker
-   * @return Success transaction of tokens to worker
    */
-  function transferTokensToWorker(bytes32 _workerId, uint256 _amount)
+  function transferTokensFromCompanyToWorker(bytes32 _workerId, uint256 _amount)
     public
     payable
     activeToken(msg.sender)
@@ -293,14 +308,76 @@ contract ThanklyToken is Initializable, Ownable {
     workerRegistered(_workerId, msg.sender)
     paidEnough(_amount)
     refundExtraCosts(_amount)
-    returns (bool)
   {
-    companyToken[msg.sender].totalSupply += _amount;
-    companyToken[msg.sender].workerBalance[_workerId] += _amount;
+    companyToken[msg.sender].transferableTokens[_workerId] += _amount;
 
-    emit TokensTransferedToWorker(_workerId, _amount);
+    emit TokensTransferedFromCompanyToWorker(_workerId, _amount);
+  }
 
-    return true;
+  /**
+   * @dev Transfer tokens from worker to worker
+   * @param _from Id of the company worker from DB who sends tokens
+   * @param _to Id of the company worker from DB who receives tokens
+   * @param _companyAddress Address of the company owner of the token
+   * @param _amount Amount of tokens transfered to worker
+   */
+  function transferTokensFromWorkerToWorker(bytes32 _from, bytes32 _to, address _companyAddress, uint256 _amount)
+    public
+    verifyCaller
+    activeToken(_companyAddress)
+    workerRegistered(_from, _companyAddress)
+    workerRegistered(_to, _companyAddress)
+    enoughTransferableTokens(_from, _companyAddress, _amount)
+  {
+    address companyAddress = _companyAddress;
+    bytes32 from = _from;
+    bytes32 to = _to;
+    uint256 amount = _amount;
+
+    companyToken[companyAddress].transferableTokens[from] -= amount;
+    companyToken[companyAddress].burnableTokens[to] += amount;
+
+    emit TokensTransferedFromWorkerToWorker(from, to, amount);
+  }
+
+  /**
+   * @dev Burn tokens of the worker (action processed when worker exchange tokens)
+   * @param _workerId Id of the company worker from DB who wants to burn tokens
+   * @param _companyAddress Address of the company owner of the token
+   * @param _amount Amount of tokens transfered to worker
+   */
+  function burnTokens(bytes32 _workerId, address _companyAddress, uint256 _amount)
+    public
+    verifyCaller
+    activeToken(_companyAddress)
+    workerRegistered(_workerId, _companyAddress)
+    enoughBurnableTokens(_workerId, _companyAddress, _amount)
+  {
+    companyToken[_companyAddress].burnableTokens[_workerId] -= _amount;
+
+    emit TokensBurned(_workerId, _amount);
+  }
+
+  /**
+   * @dev Withdraw contract funds to the contract owner
+   * @notice If amount willing to transfer is more than the current
+   *         contract balance, all the funds are withdraw
+   * @param _amount Amount willing to withdraw
+   */
+  function withdraw(uint256 _amount)
+    public
+    onlyOwner
+  {
+    uint256 amountToWithdraw = _amount;
+    uint256 contractBalance = address(this).balance;
+
+    // if (_amount > contractBalance) {
+    //   amountToWithdraw = contractBalance;
+    // }
+
+    msg.sender.transfer(amountToWithdraw);
+
+    emit Withdraw(amountToWithdraw);
   }
 
   //-------------------------------- //
@@ -317,9 +394,10 @@ contract ThanklyToken is Initializable, Ownable {
     public
     view
     workerRegistered(_workerId, _companyAddress)
-    returns (uint256)
+    returns (uint256 transferableTokens, uint256 burnableTokens)
   {
-    return companyToken[_companyAddress].workerBalance[_workerId];
+    transferableTokens = companyToken[_companyAddress].transferableTokens[_workerId];
+    burnableTokens = companyToken[_companyAddress].burnableTokens[_workerId];
   }
   
 }
