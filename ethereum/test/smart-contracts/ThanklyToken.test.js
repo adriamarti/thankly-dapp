@@ -685,46 +685,46 @@ contract('ThanklyToken', (accounts) => {
     })
   })
 
-  describe.only('withdraw() is called', () => {
-    describe('and the contract is already initialized', () => {
-      beforeEach(async () => {
-        await thanklyToken.initialize(owner);
-        await thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner });
-        await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
-        await thanklyToken.createToken(currencyName, currencySymbol, { from: company });
-        await thanklyToken.registerWorker(workerId1, { from: company });
-        const transacionCost = amountToTransferFromCompanyToWorker * initialTokenValueConversion;
-        const transactionFee = transacionCost * initialSellingPercentage / 100;
-        const totalTransactionCost = `${transacionCost + transactionFee}`;
+  // describe('withdraw() is called', () => {
+  //   describe('and the contract is already initialized', () => {
+  //     beforeEach(async () => {
+  //       await thanklyToken.initialize(owner);
+  //       await thanklyToken.setTokenValueConversion(initialTokenValueConversion, { from: owner });
+  //       await thanklyToken.setSellingPercentage(initialSellingPercentage, { from: owner });
+  //       await thanklyToken.createToken(currencyName, currencySymbol, { from: company });
+  //       await thanklyToken.registerWorker(workerId1, { from: company });
+  //       const transacionCost = amountToTransferFromCompanyToWorker * initialTokenValueConversion;
+  //       const transactionFee = transacionCost * initialSellingPercentage / 100;
+  //       const totalTransactionCost = `${transacionCost + transactionFee}`;
 
-        await thanklyToken.transferTokensFromCompanyToWorker(
-          workerId1, amountToTransferFromCompanyToWorker,
-          { from: company, value: totalTransactionCost }
-        );
-      })
+  //       await thanklyToken.transferTokensFromCompanyToWorker(
+  //         workerId1, amountToTransferFromCompanyToWorker,
+  //         { from: company, value: totalTransactionCost }
+  //       );
+  //     })
 
-      describe('and it\'s called by the owner', () => {
-        it.only(`should withdraw funds from contract to owner`, async () => {
-          const contractInitialBalance = await web3.eth.getBalance(thanklyToken.address);
-          await thanklyToken.withdraw(amountToTransferFromCompanyToWorker, { from: owner });
-          const contractEndBalance = await web3.eth.getBalance(thanklyToken.address);
-          console.log('contractInitialBalance: ', contractInitialBalance)
-          console.log('contractEndBalance: ', contractEndBalance)
-          assert.equal(true, true);
-        })
-      })
+  //     describe('and it\'s called by the owner', () => {
+  //       it(`should withdraw funds from contract to owner`, async () => {
+  //         const contractInitialBalance = await web3.eth.getBalance(thanklyToken.address);
+  //         await thanklyToken.withdraw(amountToTransferFromCompanyToWorker, { from: owner });
+  //         const contractEndBalance = await web3.eth.getBalance(thanklyToken.address);
+  //         console.log('contractInitialBalance: ', contractInitialBalance)
+  //         console.log('contractEndBalance: ', contractEndBalance)
+  //         assert.equal(true, true);
+  //       })
+  //     })
 
-      describe('and it\'s NOT called by the owner', () => {
-        it(`should revert the transaction`, async () => {
-          await expectRevert.unspecified(thanklyToken.withdraw(10, { from: otherAccount }));
-        })
-      })
-    })
+  //     describe('and it\'s NOT called by the owner', () => {
+  //       it(`should revert the transaction`, async () => {
+  //         await expectRevert.unspecified(thanklyToken.withdraw(10, { from: otherAccount }));
+  //       })
+  //     })
+  //   })
 
-    describe('and the contract is NOT already initialized', () => {
-      it('should revert the transaction', async () => {
-        await expectRevert.unspecified(thanklyToken.withdraw(10, { from: owner }));
-      })
-    })
-  })
+  //   describe('and the contract is NOT already initialized', () => {
+  //     it('should revert the transaction', async () => {
+  //       await expectRevert.unspecified(thanklyToken.withdraw(10, { from: owner }));
+  //     })
+  //   })
+  // })
 })

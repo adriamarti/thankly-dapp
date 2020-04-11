@@ -358,27 +358,26 @@ contract ThanklyToken is Initializable, Ownable {
     emit TokensBurned(_workerId, _amount);
   }
 
-  /**
-   * @dev Withdraw contract funds to the contract owner
-   * @notice If amount willing to transfer is more than the current
-   *         contract balance, all the funds are withdraw
-   * @param _amount Amount willing to withdraw
-   */
-  function withdraw(uint256 _amount)
-    public
-    onlyOwner
-  {
-    uint256 amountToWithdraw = _amount;
-    uint256 contractBalance = address(this).balance;
+  // /**
+  //  * @dev Withdraw contract funds to the contract owner
+  //  * @notice If amount willing to transfer is more than the current
+  //  *         contract balance, all the funds are withdraw
+  //  */
+  // function withdraw()
+  //   public
+  //   onlyOwner
+  // {
+  //   // uint256 amountToWithdraw = _amount;
+  //   // uint256 contractBalance = address(this).balance;
 
-    // if (_amount > contractBalance) {
-    //   amountToWithdraw = contractBalance;
-    // }
+  //   // if (_amount > contractBalance) {
+  //   //   amountToWithdraw = contractBalance;
+  //   // }
 
-    msg.sender.transfer(amountToWithdraw);
+  //   msg.sender.transfer(address(this).balance);
 
-    emit Withdraw(amountToWithdraw);
-  }
+  //   // emit Withdraw(amountToWithdraw);
+  // }
 
   //-------------------------------- //
   // GETTERS
