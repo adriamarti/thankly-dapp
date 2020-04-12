@@ -9,7 +9,7 @@ import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { HeaderWrapper, Header, Navigation, Image, SignInButton } = StyledComponents;
+const { HeaderWrapper, Header, Navigation, Image, SignInButton, ThanklyIcon, ThanklyLogo } = StyledComponents;
 
 const SignInForm = () => {
   return (
@@ -45,7 +45,8 @@ const Component = () => {
     <HeaderWrapper>
       <Header>
         <Navigation>
-          <Image src={logo} width="100px" height="auto" alt="Thankly" />
+          <ThanklyIcon />
+          <ThanklyLogo />
           <Menu mode="horizontal">
             <Menu.Item key="1">What is this about?</Menu.Item>
             <Menu.Item key="2">How does it work?</Menu.Item>

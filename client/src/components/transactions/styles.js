@@ -1,11 +1,5 @@
 import styled from 'styled-components';
-import { Layout, Button, Col, Card, Collapse } from 'antd';
-
-const StyledContent = styled(Layout.Content)`
-  padding: 25px;
-  max-width: 1200px;
-  margin: 0 auto;
-`;
+import { Collapse } from 'antd';
 
 const StyledCollapse = styled(Collapse)`
   background: none;
@@ -46,8 +40,6 @@ const TransactionHeader = styled.div`
 `;
 
 export default {
-  StyledContent,
   StyledCollapse,
   TransactionHeader
 };
-

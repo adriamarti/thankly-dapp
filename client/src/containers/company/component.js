@@ -1,103 +1,126 @@
 // External Dependencies
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Layout, Row, Typography, Col, Card, Statistic, Divider, Button, Tabs, List } from 'antd';
-import { DollarOutlined, UserAddOutlined, UserDeleteOutlined, SwapOutlined, FireOutlined } from '@ant-design/icons';
+import { Layout, Row, Typography, Col, Tabs, Collapse, Statistic } from 'antd';
 import AppHeader from '../../components/headers/app';
 import Sider from '../../components/sider'
-
-import registerEmployee from '../../assets/images/flame-sign-up.png'
+import Employees from '../../components/employees'
+import Transactions from '../../components/transactions';
+import RegisterWorkerCard from '../../components/cards/registerWorker';
+import TokenSuppliedCard from '../../components/cards/tokenSupplied';
+import WorkersCard from '../../components/cards/workers';
+import AccountSettings from '../../components/accountSettings';
+import PathwaySettings from '../../components/pathwaySettings';
+import { ArrowUpOutlined, ArrowDownOutlined, FireOutlined, SwapOutlined, InfoCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { StyledContent, ButtonsWrapper, StyledButton, Image, StyledColLeft, StyledColRight, RegisterWrapper, TokenSuppliedCard, WorkersCard, RegisterWorkerCard } = StyledComponents;
-const { Title, Paragraph } = Typography;
+const { StyledContent, StyledCollapse, TransactionHeader } = StyledComponents;
+const { Title, Paragraph, Text } = Typography;
 const { Content } = Layout;
 const { TabPane } = Tabs;
+const { Panel } = Collapse;
 
-const workers = [
-  {
-    name: 'Dunya Salazar',
-    email: 'dunya.salazar@gmail.com',
-    job: 'Junior Developer',
-  },
-  {
-    name: 'Dunya Salazar',
-    email: 'dunya.salazar@gmail.com',
-    job: 'Junior Developer',
-  },
-  {
-    name: 'Dunya Salazar',
-    email: 'dunya.salazar@gmail.com',
-    job: 'Junior Developer',
-  },
-  {
-    name: 'Dunya Salazar',
-    email: 'dunya.salazar@gmail.com',
-    job: 'Junior Developer',
-  },
-];
+const Component = ({ content }) => {
 
-const Component = () => {
+  const getTranasctionType = (type) => {
+    const transactionType = {
+      transferable: {
+        color: '#7dd068',
+        icon: <SwapOutlined />,
+      },
+      burnable: {
+        color: '#faad14',
+        icon: <SwapOutlined />,
+      },
+      burned: {
+        color: '#ff4d4f',
+        icon: <FireOutlined />,
+      }
+    };
+
+    return (
+      <Statistic
+        value={11}
+        valueStyle={{ color: transactionType[type].color }}
+        prefix={transactionType[type].icon}
+      />
+    )
+  }
+
+  const transactionHeader = () => {
+    return (
+      <TransactionHeader>
+        <Text type="secondary">From</Text>
+        <Text strong>Adria Marti</Text>
+        <Text type="secondary">to</Text>
+        <Text strong>Dunyazath Salazar</Text>
+      </TransactionHeader>
+    )
+  }
+
+  const getContent = (content) => {
+    if (content === 'settings') {
+      return (
+        <div>
+          <Title>
+            Configure your account
+          </Title>
+          <Paragraph>
+            Here you can configure the basic details of your account.
+          </Paragraph>
+          <AccountSettings />
+          <Title>
+            Configure your token economy
+          </Title>
+          <Paragraph>
+            In order to enable transactions between your employees you need to configure the available pathways from your economy. This pathways will determinate how many tokens will be transfered to each employee.
+          </Paragraph>
+          <PathwaySettings />
+        </div>
+      )
+    }
+
+    return (
+      <div>
+        <Title>
+          Welcome to your dashboard
+        </Title>
+        <Paragraph>
+          This is the dashboard of the company. Through it you have the opportunity to transfer your company's tokens so that your workers can make good collaborations public.
+        </Paragraph>
+        <Tabs defaultActiveKey="1">
+          <TabPane tab="Registered Employees" key="1">
+            <Employees />
+          </TabPane>
+          <TabPane tab="Transactions" key="2">
+            <Transactions />
+          </TabPane>
+        </Tabs>
+      </div>
+    )
+  }
+
   return (
-    <Layout className="layout">
-      <AppHeader />
-      <Sider />
-      <StyledContent>
-        <Row gutter={50}>
-          <Col className="gutter-row" span={16}>
-            <Title>
-              Welcome to your dashboard
-            </Title>
-            <Paragraph>
-              This is the dashboard of the company. Through it you have the opportunity to transfer your company's tokens so that your workers can make good collaborations public.
-            </Paragraph>
-            <Tabs defaultActiveKey="1">
-              <TabPane tab="Registered Employees" key="1">
-                <List
-                  itemLayout="horizontal"
-                  dataSource={workers}
-                  renderItem={item => (
-                    <List.Item>
-                      <List.Item.Meta
-                        title={`${item.name} | ${item.email}`}
-                        description={item.job}
-                      />
-                      <Button type="primary" shape="circle" icon={<SwapOutlined />} size="large" />
-                    </List.Item>
-                  )}
-                />
-              </TabPane>
-              <TabPane tab="Transactions" key="2">
-                Content of Tab Pane 2
-              </TabPane>
-            </Tabs>
-          </Col>
-          <Col className="gutter-row" span={8}>
-            <RegisterWorkerCard cover={<img alt="Register" src={registerEmployee} />}>
-              <Button type="primary" icon={<UserAddOutlined />} size="large">
-                Register a new employee
-              </Button>
-            </RegisterWorkerCard>
-            <TokenSuppliedCard title="Your Token Economy" bordered={false}>
-              <div className='token-supplied-card-statistic'>
-                <Statistic title="Supplied" value={1128} prefix={<DollarOutlined />} />
-              </div>
-              <Divider />
-              <div className='token-supplied-card-statistic'>
-                <Statistic title="Transfered" value={1128} prefix={<SwapOutlined />} />
-                <Statistic title="Burned" value={1128} prefix={<FireOutlined />} />
-              </div>
-            </TokenSuppliedCard>
-            <WorkersCard title="Registered Employees" bordered={false}>
-              <Statistic title="Active" value={1128} valueStyle={{ color: '#3f8600' }} prefix={<UserAddOutlined />} />
-              <Statistic title="Inactive" value={1128} valueStyle={{ color: '#cf1322' }} prefix={<UserDeleteOutlined />} />
-            </WorkersCard>
-          </Col>         
-        </Row>
-      </StyledContent>
+    <Layout style={{ minHeight: '100vh' }}>
+      <Sider selectedSiderItem={content === 'settings' ? 'settings' : 'home'}/>
+      <Layout className="site-layout">
+        <AppHeader />
+        <StyledContent>
+          <Row gutter={50}>
+            <Col className="gutter-row" span={16}>
+              {getContent(content)}
+            </Col>
+            <Col className="gutter-row" span={8}>
+              <RegisterWorkerCard />
+              <TokenSuppliedCard />
+              <WorkersCard />
+            </Col>         
+          </Row>
+        </StyledContent>
+      </Layout>
     </Layout>
   );
 }

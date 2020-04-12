@@ -10,5 +10,8 @@ export default () => (
     <Route exact path="/company">
       <Company />
     </Route>
+    <Route exact path="/company/settings">
+      <Company content="settings" />
+    </Route>
   </Switch>
 );

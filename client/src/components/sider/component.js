@@ -1,16 +1,18 @@
 // External Dependencies
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Menu } from 'antd';
+import { Menu, Layout } from 'antd';
+import { Link } from "react-router-dom";
 import { HomeOutlined, SettingOutlined } from '@ant-design/icons';
 
 import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { StyledSider } = StyledComponents;
+const { ThanklyIcon, ThanklyLogo, LogoMenuItem, StyledMenuItem } = StyledComponents;
 
-const Component = () => {
+const Component = ({ selectedSiderItem }) => {
+  console.log(selectedSiderItem)
   const [menuIsCollapsed, setMenuIsCollapsed] = useState(true)
 
   const onCollapse = collapsed => {
@@ -19,18 +21,26 @@ const Component = () => {
   };
 
   return (
-    <StyledSider collapsible collapsed={menuIsCollapsed} onCollapse={onCollapse}>
-      <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
-        <Menu.Item key="1">
-          <HomeOutlined />
-          <span>Home</span>
-        </Menu.Item>
-        <Menu.Item key="2">
-          <SettingOutlined />
-          <span>Settings</span>
-        </Menu.Item>
+    <Layout.Sider collapsible collapsed={menuIsCollapsed} onCollapse={onCollapse}>
+      <Menu theme="dark" defaultSelectedKeys={[selectedSiderItem]} mode="inline">
+        <LogoMenuItem key="logo" disabled>
+          <ThanklyIcon />
+          <ThanklyLogo />
+        </LogoMenuItem>
+        <StyledMenuItem key="home">
+          <Link to="/company">
+            <HomeOutlined />
+            <span>Home</span>
+          </Link>
+        </StyledMenuItem>
+        <StyledMenuItem key="settings">
+          <Link to="/company/settings">
+            <SettingOutlined />
+            <span>Settings</span>
+          </Link>
+        </StyledMenuItem>
       </Menu>
-    </StyledSider>
+    </Layout.Sider>
   );
 }
 

@@ -7,7 +7,7 @@ import CompanyRouter from './routes/company';
 const Router = () => (
   <Switch>
     <Route exact path="/" component={HomeRouter} />
-    <Route exact path="/company" component={CompanyRouter} />
+    <Route path="/company" component={CompanyRouter} />
   </Switch>
 );
 

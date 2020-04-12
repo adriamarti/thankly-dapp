@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import { Layout, Button } from 'antd';
+import { ReactComponent as Icon } from '../../../assets/images/thankly_icon.svg'
+import { ReactComponent as Logo } from '../../../assets/images/thankly_logo.svg'
 
 const HeaderWrapper = styled(Layout.Header)`
   background-color: #fff;
@@ -29,10 +31,23 @@ const SignInButton = styled(Button)`
   width: 100%;
 `;
 
+const ThanklyIcon = styled(Icon)`
+  height: 35px;
+  margin-right: 15px;
+  fill: #c3c4c5
+`;
+
+const ThanklyLogo = styled(Logo)`
+  height: 45px;
+  fill: #1890ff;
+`;
+
 export default {
   HeaderWrapper,
   Header,
   Navigation,
   Image,
   SignInButton,
+  ThanklyLogo,
+  ThanklyIcon,
 };

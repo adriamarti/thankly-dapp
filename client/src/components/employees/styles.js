@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Menu } from 'antd';
+import { Menu, List } from 'antd';
 import { ReactComponent as Icon } from '../../assets/images/thankly_icon.svg'
 import { ReactComponent as Logo } from '../../assets/images/thankly_logo.svg'
 
@@ -28,10 +28,23 @@ const StyledMenuItem = styled(Menu.Item)`
   height: 40px !important;
 `;
 
+const ListItem = styled(List.Item)`
+  border-bottom: 1px solid #d9d9d9 !important;
+`;
+
+const Actions = styled.div`
+  display: flex;
+  & div:first-child {
+    margin-right: 10px;
+  }
+`;
+
 export default {
   ThanklyIcon,
   ThanklyLogo,
   LogoMenuItem,
   StyledMenuItem,
+  ListItem,
+  Actions,
 };
 

@@ -1,25 +1,32 @@
 // External Dependencies
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Menu, Popover, Button } from 'antd';
+import { Menu, Popover, Button, Typography } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
-import logo from '../../../assets/images/logo.png'
 
 import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { Header, Image, User, UserName } = StyledComponents;
-
+const { Header, User, UserName, Navigation } = StyledComponents;
 
 const Component = () => {
   return (
     <Header>
-      <Image src={logo} width="100px" height="auto" alt="Thankly" />
-      <User>
-        <UserName>Company Name</UserName>
-        <Button type="primary" shape="circle" icon={<LogoutOutlined />} />
-      </User>
+      <Navigation>
+        <div>
+          <Typography.Text strong>
+            Adidas Dollar
+          </Typography.Text>
+          <Typography.Text code>
+            ADD
+          </Typography.Text>
+        </div>
+        <User>
+          <UserName>Company Name</UserName>
+          <Button type="primary" shape="circle" icon={<LogoutOutlined />} />
+        </User>
+      </Navigation>
     </Header>
   );
 }
