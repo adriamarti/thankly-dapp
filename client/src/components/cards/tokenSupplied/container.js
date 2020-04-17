@@ -3,9 +3,10 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import Component from './component';
+import { getToken } from '../../../modules/token/selectors';
 
-const mapStateToProps = (dispatch) => ({
-  
+const mapStateToProps = (state) => ({
+  token: getToken(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

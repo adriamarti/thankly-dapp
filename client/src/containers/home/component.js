@@ -1,5 +1,5 @@
 // External Dependencies
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Layout, Row, Typography } from 'antd';
 import WebHeader from '../../components/headers/web';
@@ -14,8 +14,11 @@ const { StyledContent, ButtonsWrapper, StyledButton, Image, StyledColLeft, Style
 const { Title, Paragraph } = Typography;
 const { Footer } = Layout;
 
+const Component = ({ getEthereumAddress }) => {
+  useEffect(() => {
+    getEthereumAddress();
+  }, []);
 
-const Component = () => {
   return (
     <Layout className="layout">
       <WebHeader />
@@ -45,8 +48,8 @@ const Component = () => {
   );
 }
 
-// Component.propTypes = {
-//   subpage: PropTypes.string.isRequired,
-// };
+Component.propTypes = {
+  getEthereumAddress: PropTypes.func.isRequired,
+};
 
 export default Component;

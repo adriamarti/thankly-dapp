@@ -5,11 +5,10 @@ import { omit } from 'lodash';
 import { fetching, successful, failure } from './status';
 
 // modules
-import { GET_FIDEL_TRANSACTIONS_REQUESTED, GET_S_FIDEL_TRANSACTIONS_REQUESTED } from '../../modules/transactions/action-types';
+import { SIGN_IN_REQUESTED} from '../../modules/signIn/action-types';
 
 const monitoredRequests = [
-  { action: GET_FIDEL_TRANSACTIONS_REQUESTED },
-  { action: GET_S_FIDEL_TRANSACTIONS_REQUESTED },
+  { action: SIGN_IN_REQUESTED },
 ].map((request) => (request.requestIdentifier ? request : { ...request, requestIdentifier: () => 'none' }));
 
 const INITIAL_STATE = {};

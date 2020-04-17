@@ -1,7 +1,7 @@
 // External Dependencies
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, Typography, Form, Input, Result } from 'antd';
+import { Button, Modal, Typography, Form, Input } from 'antd';
 
 import 'antd/dist/antd.css'
 
@@ -10,20 +10,13 @@ import StyledComponents from './styles';
 const { Paragraph, Text } = Typography;
 const { RegisterWrapper, StyledButton, StyledForm } = StyledComponents;
 
-const Component = ({ ethereumAddress, contract, registerCompany, registeredName }) => {
+
+const Component = ({ ethereumAddress }) => {
   const [showMetamaskWarning, setShowMetamaskWarning] = useState(false);
   const [registerForm] = Form.useForm();
   const [registerModalVisible, setRegisterModalVisible] = useState(false);
   const [isProcessingRegistration, setIsProcessingRegistration] = useState(false);
   const [isSuccessRegistered, setIsSuccessRegistered] = useState(false);
-  const [buttonText, setButtonText] = useState('Sign In');
-
-  useEffect(() => {
-    if (registeredName) {
-      setIsSuccessRegistered(true);
-      setIsProcessingRegistration(false);
-    }
-  }, [registeredName])
 
   useEffect(() => {
     if (!ethereumAddress) {
@@ -37,24 +30,15 @@ const Component = ({ ethereumAddress, contract, registerCompany, registeredName 
     setRegisterModalVisible(isVisible);
   };
 
-  const toggleSignInButtonStatus = () => {
-    setIsProcessingRegistration(!isSuccessRegistered);
-    setButtonText(isSuccessRegistered ? 'Signing In' : 'Sign In');
-  }
-
-  const handleSubmit = async () => {
-    toggleSignInButtonStatus();
+  const handleSubmit = () => {
     const { getFieldValue } = registerForm;
     const email = getFieldValue('email');
     const password = getFieldValue('password');
-    const name = getFieldValue('name');
 
-    try {
-      await contract.methods.registerCompany().send({ from: ethereumAddress });
-      registerCompany(email, name, password, ethereumAddress)
-    } catch(err) {
-      console.log(err)
-    }
+    // Simulate success signup
+    console.log('email:', email)
+    console.log('password:', password)
+    setIsSuccessRegistered(true);
   };
 
   const getModalTitle = () => {
@@ -62,17 +46,12 @@ const Component = ({ ethereumAddress, contract, registerCompany, registeredName 
       return 'Congratulations';
     }
 
-    return 'Register Your Company';
+    return 'Register Your Company and Token';
   }
 
   const getModalText = () => {
     if (isSuccessRegistered) {
-      return (
-        <Result
-          status="success"
-          title="Successfully Registered"
-        />
-      )
+      return 'Check your email and follow the instruction to confirm your account';
     }
 
     return 'This registry is only for companies. If you are an employee from a company registered in our platform ask to HR department to join the platform';
@@ -92,8 +71,8 @@ const Component = ({ ethereumAddress, contract, registerCompany, registeredName 
           <Button key="cancel" onClick={() => toggleModalVisibility(false)}>
             Cancel
           </Button>,
-          <Button key="register" type="primary" disabled={isSuccessRegistered} loading={isProcessingRegistration} onClick={() => handleSubmit()}>
-            {buttonText}
+          <Button key="register" type="primary" loading={isProcessingRegistration} onClick={() => handleSubmit()}>
+            Register
           </Button>,
         ]}
       >
@@ -113,17 +92,24 @@ const Component = ({ ethereumAddress, contract, registerCompany, registeredName 
             </Form.Item>
 
             <Form.Item
-              name="name" 
-              rules={[{ required: true, message: 'Please input your company name!' }]}
-              >
-              <Input placeholder="Company Name" />
-            </Form.Item>
-
-            <Form.Item
               name="password" 
               rules={[{ required: true, message: 'Please input your password!' }]}
               >
               <Input.Password placeholder="Password" />
+            </Form.Item>
+
+            <Form.Item
+              name="tokenName" 
+              rules={[{ required: true, message: 'Please input the token name!' }]}
+              >
+              <Input placeholder="Token Name (ie. Thankly Dollar)" />
+            </Form.Item>
+
+            <Form.Item
+              name="tokenSymbol" 
+              rules={[{ required: true, message: 'Please input the token symbol!' }]}
+              >
+              <Input placeholder="Token Symbol (ie. THK)" />
             </Form.Item>
           </StyledForm>
         }
@@ -133,10 +119,7 @@ const Component = ({ ethereumAddress, contract, registerCompany, registeredName 
 }
 
 Component.propTypes = {
-  ethereumAddress: PropTypes.string,
-  contract: PropTypes.object,
-  registerCompany: PropTypes.func.isRequired,
-  registeredName: PropTypes.string,
+  ethereumAddress: PropTypes.string
 };
 
 export default Component;

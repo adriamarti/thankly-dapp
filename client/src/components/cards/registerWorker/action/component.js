@@ -12,11 +12,12 @@ const { Option } = Select;
 
 const { Amount, StyledForm } = StyledComponents;
 
-const Component = () => {
+const Component = ({ token }) => {
   const [editWorkerForm] = Form.useForm();
   const [editWorkerModalVisible, setEditWorkerModalVisible] = useState(false);
   const [isProcessingRegistration, setIsProcessingRegistration] = useState(false);
   const [isSuccessRegistered, setIsSuccessRegistered] = useState(false);
+  const isButtonDisabled = token.name ? false : true;
 
   const toggleModalVisibility = (isVisible) => {
     setEditWorkerModalVisible(isVisible);
@@ -31,7 +32,7 @@ const Component = () => {
 
   return (
     <div>
-      <Button type="primary" icon={<UserAddOutlined />} size="large" onClick={() => toggleModalVisibility(true)}>
+      <Button type="primary" icon={<UserAddOutlined />} disabled={isButtonDisabled} onClick={() => toggleModalVisibility(true)}>
         Register a new employee
       </Button>
       <Modal
@@ -74,8 +75,8 @@ const Component = () => {
   );
 }
 
-// Component.propTypes = {
-//   subpage: PropTypes.string.isRequired,
-// };
+Component.propTypes = {
+  token: PropTypes.object.isRequired,
+};
 
 export default Component;

@@ -2,8 +2,14 @@
 import { combineReducers } from 'redux';
 
 // Internal Dependencies: Modules
-import transactions from './transactions/reducer';
+import user from './signIn/reducer';
+import token from './token/reducer';
+import ethereum from './ethereum/reducer';
+import registration from './signUp/reducer';
 
 export default combineReducers({
-  transactions,
+  user,
+  token,
+  ethereum,
+  registration,
 });

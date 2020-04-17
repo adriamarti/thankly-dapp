@@ -10,10 +10,11 @@ import StyledComponents from './styles';
 
 const { Header, User, UserName, Navigation } = StyledComponents;
 
-const Component = () => {
-  return (
-    <Header>
-      <Navigation>
+const Component = ({ token, user }) => {
+  
+  const getTokenData = () => {
+    if (token.name) {
+      return (
         <div>
           <Typography.Text strong>
             Adidas Dollar
@@ -22,8 +23,22 @@ const Component = () => {
             ADD
           </Typography.Text>
         </div>
+      )
+    }
+
+    return (
+      <Typography.Text strong>
+        There isn't any token created yet!
+      </Typography.Text>
+    )
+  }
+
+  return (
+    <Header>
+      <Navigation>
+        {getTokenData()}
         <User>
-          <UserName>Company Name</UserName>
+          <UserName>{user.name}</UserName>
           <Button type="primary" shape="circle" icon={<LogoutOutlined />} />
         </User>
       </Navigation>
@@ -31,8 +46,9 @@ const Component = () => {
   );
 }
 
-// Component.propTypes = {
-//   subpage: PropTypes.string.isRequired,
-// };
+Component.propTypes = {
+  token: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired,
+};
 
 export default Component;
