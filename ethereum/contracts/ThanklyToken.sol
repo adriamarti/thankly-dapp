@@ -30,6 +30,7 @@ contract ThanklyToken is Initializable, Ownable {
     mapping (bytes32 => uint256) burnableTokens;
   }
 
+  mapping (address => bool) private companyRegistered;
   mapping (address => Token) public companyToken;
   mapping (bytes32 => address) public workerCompanyAddress;
   mapping (address => bool) private trustedSigner;
@@ -40,6 +41,7 @@ contract ThanklyToken is Initializable, Ownable {
 
   event SellingPercentageModified(uint256 percentage);
   event TokenValueConversionModified(uint256 value);
+  event CompanyRegistered(address companyAddress);
   event TokenCreated(string name, string symbol);
   event TokenActiveStatusChanged(bool newActiveStatus, address tokenOwnerAddress);
   event WorkerResgistered(bytes32 id, address tokenOwnerAddress);
@@ -51,6 +53,22 @@ contract ThanklyToken is Initializable, Ownable {
   //-------------------------------- //
   // MODIFIERS
   //-------------------------------- //
+
+  /**
+   * @dev Verify address is not previously registered
+   */
+  modifier notRegisteredComapny() {
+    require (companyRegistered[msg.sender] == false);
+    _;
+  }
+
+  /**
+   * @dev Verify address is previously registered
+   */
+  modifier registeredComapny() {
+    require (companyRegistered[msg.sender] == true);
+    _;
+  }
 
   /**
    * @dev Verify sellingPercentageDefined is defined
@@ -223,13 +241,25 @@ contract ThanklyToken is Initializable, Ownable {
   }
 
   /**
+   * @dev Register a company into the platform
+   */
+  function registerCompany()
+    public
+    notRegisteredComapny
+  {
+    companyRegistered[msg.sender] = true;
+
+    emit CompanyRegistered(msg.sender);
+  }
+
+  /**
    * @dev Create a new token by a company
    * @param _name Id of the company worker from the DB
    * @param _symbol Id of the company worker from the DB
-   * @return Success token creation
    */
   function createToken(string memory _name, string memory _symbol)
     public
+    registeredComapny
     sellingPercentageDefined
   {
     companyToken[msg.sender].name = _name;

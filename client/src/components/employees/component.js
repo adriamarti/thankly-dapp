@@ -1,8 +1,7 @@
 // External Dependencies
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { List, Button, Divider, Avatar } from 'antd';
-import { SwapOutlined } from '@ant-design/icons';
+import { List, Empty, Typography, Avatar } from 'antd';
 import EditWorker from '../editWorker'
 import TransferTokensToWorker from '../transferTokensToWorker'
 
@@ -10,32 +9,10 @@ import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { ThanklyIcon, ThanklyLogo, LogoMenuItem, StyledMenuItem, ListItem, Actions } = StyledComponents;
+const { ListItem, Actions } = StyledComponents;
 
-const workers = [
-  {
-    name: 'Dunya Salazar',
-    email: 'dunya.salazar@gmail.com',
-    job: 'Junior Developer',
-  },
-  {
-    name: 'Dunya Salazar',
-    email: 'dunya.salazar@gmail.com',
-    job: 'Junior Developer',
-  },
-  {
-    name: 'Dunya Salazar',
-    email: 'dunya.salazar@gmail.com',
-    job: 'Junior Developer',
-  },
-  {
-    name: 'Dunya Salazar',
-    email: 'dunya.salazar@gmail.com',
-    job: 'Junior Developer',
-  },
-];
 
-const Component = () => {
+const Component = ({ workers }) => {
 
   const avatar = (name) => {
     let initials = name.match(/\b\w/g) || [];
@@ -48,7 +25,17 @@ const Component = () => {
     )
   }
 
-  return (
+  const noResults = () => (
+    <Empty
+      description={
+        <Typography.Text>
+          No data available as you have not registered any employee
+        </Typography.Text>
+      }
+    />
+  )
+
+  const employeesList = () => (
     <List
       itemLayout="horizontal"
       dataSource={workers}
@@ -64,14 +51,23 @@ const Component = () => {
             <TransferTokensToWorker />
           </Actions>
         </ListItem>
-        
       )}
     />
+  )
+
+  return (
+    <div>
+      {workers.length === 0 ? noResults() : employeesList()}
+    </div>
   );
 }
 
-// Component.propTypes = {
-//   subpage: PropTypes.string.isRequired,
-// };
+Component.propTypes = {
+  workers: PropTypes.array,
+};
+
+Component.defaultProps = {
+  workers: [],
+};
 
 export default Component;

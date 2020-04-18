@@ -3,9 +3,10 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import Component from './component';
+import { getWorkers } from '../../modules/workers/selectors';
 
-const mapStateToProps = (dispatch) => ({
-  
+const mapStateToProps = (state) => ({
+  workers: getWorkers(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

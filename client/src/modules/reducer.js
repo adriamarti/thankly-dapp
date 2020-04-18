@@ -6,10 +6,12 @@ import user from './signIn/reducer';
 import token from './token/reducer';
 import ethereum from './ethereum/reducer';
 import registration from './signUp/reducer';
+import workers from './workers/reducer';
 
 export default combineReducers({
   user,
   token,
   ethereum,
   registration,
+  workers
 });

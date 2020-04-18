@@ -1,7 +1,7 @@
 // External Dependencies
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Layout, Row, Typography, Col, Tabs, Collapse, Statistic } from 'antd';
+import { Layout, Row, Typography, Col, Tabs, Statistic } from 'antd';
 import AppHeader from '../../components/headers/app';
 import Sider from '../../components/sider'
 import Employees from '../../components/employees'
@@ -11,19 +11,17 @@ import TokenSuppliedCard from '../../components/cards/tokenSupplied';
 import WorkersCard from '../../components/cards/workers';
 import AccountSettings from '../../components/accountSettings';
 import PathwaySettings from '../../components/pathwaySettings';
-import { ArrowUpOutlined, ArrowDownOutlined, FireOutlined, SwapOutlined, InfoCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { FireOutlined, SwapOutlined } from '@ant-design/icons';
 
 import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { StyledContent, StyledCollapse, TransactionHeader } = StyledComponents;
+const { StyledContent, TransactionHeader } = StyledComponents;
 const { Title, Paragraph, Text } = Typography;
-const { Content } = Layout;
 const { TabPane } = Tabs;
-const { Panel } = Collapse;
 
-const Component = ({ content }) => {
+const Component = ({ content, getWorkers, id }) => {
 
   const getTranasctionType = (type) => {
     const transactionType = {
@@ -103,6 +101,10 @@ const Component = ({ content }) => {
     )
   }
 
+  useEffect(() => {
+    getWorkers(id)
+  }, [])
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider selectedSiderItem={content === 'settings' ? 'settings' : 'home'}/>
@@ -125,8 +127,9 @@ const Component = ({ content }) => {
   );
 }
 
-// Component.propTypes = {
-//   subpage: PropTypes.string.isRequired,
-// };
+Component.propTypes = {
+  getWorkers: PropTypes.func.isRequired,
+  id: PropTypes.string.isRequired,
+};
 
 export default Component;

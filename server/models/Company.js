@@ -34,6 +34,10 @@ const companySchema = new mongoose.Schema({
     type: [pathwaySchema],
     required: false,
   },
+  transactions: {
+    type: Array,
+    required: false,
+  },
 }, {
   timestamps: true
 });

@@ -1,26 +1,55 @@
 // External Dependencies
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Statistic } from 'antd';
+import { Statistic, Typography, Empty, Card } from 'antd';
 import { UserAddOutlined, UserDeleteOutlined } from '@ant-design/icons';
 
 import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { WorkersCard } = StyledComponents;
+const { Statistics } = StyledComponents;
 
-const Component = () => {
+const Component = ({ workers, active, inactive }) => {
+  
+  const getWorkersData = () => {
+    if (workers.length === 0) {
+      return (
+        <Empty
+          description={
+            <Typography.Text>
+              No data available as you have not registered any employee
+            </Typography.Text>
+          }
+        />
+      )
+    }
+
+    return (
+      <Statistics>
+        <Statistic title="Active" value={active} valueStyle={{ color: '#7dd068' }} prefix={<UserAddOutlined />} />
+        <Statistic title="Inactive" value={inactive} valueStyle={{ color: '#ff4d4f' }} prefix={<UserDeleteOutlined />} />
+      </Statistics>
+    )
+  }
+
   return (
-    <WorkersCard title="Registered Employees" bordered={false}>
-      <Statistic title="Active" value={1128} valueStyle={{ color: '#7dd068' }} prefix={<UserAddOutlined />} />
-      <Statistic title="Inactive" value={1128} valueStyle={{ color: '#ff4d4f' }} prefix={<UserDeleteOutlined />} />
-    </WorkersCard>
+    <Card title="Registered Employees" bordered={false}>
+      {getWorkersData()}
+    </Card>
   );
 }
 
-// Component.propTypes = {
-//   subpage: PropTypes.string.isRequired,
-// };
+Component.propTypes = {
+  workers: PropTypes.object,
+  active: PropTypes.number,
+  inactive: PropTypes.number,
+};
+
+Component.defaultProps = {
+  workers: [],
+  active: 0,
+  inactive: 0
+};
 
 export default Component;

@@ -24,7 +24,11 @@ const workerSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     required: true,
-  }
+  },
+  transactions: {
+    type: Array,
+    required: false,
+  },
 }, {
   timestamps: true
 });

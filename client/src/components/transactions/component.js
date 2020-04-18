@@ -1,9 +1,7 @@
 // External Dependencies
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Typography, Statistic, List, Collapse } from 'antd';
-import EditWorker from '../editWorker'
-import TransferTokensToWorker from '../transferTokensToWorker'
+import { Typography, Statistic, List, Collapse, Empty } from 'antd';
 import { FireOutlined, SwapOutlined, InfoCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
 
 import 'antd/dist/antd.css'
@@ -15,37 +13,7 @@ const { Item } = List;
 const { Panel } = Collapse;
 const { StyledCollapse, TransactionHeader } = StyledComponents;
 
-const transactions = [
-  {
-    from: 'Dunya Salazar',
-    to: 'Adria Marti',
-    type: 'burnable',
-    message: 'This is a random message.',
-    amount: '2',
-    date: '12-12-2020',
-    id: '0x1e25112f2b5fcd3de05853ed97cd70eef2f11f126193ba5f10e208cfce912c9a',
-  },
-  {
-    from: 'Adidas',
-    to: 'Adria Marti',
-    type: 'transferable',
-    message: 'This is a regular transaction from the company to the employee.',
-    amount: '12',
-    date: '12-12-2020',
-    id: '0x1e25112f2b5fcd3de05853ed97cd70eef2f11f126193ba5f10e208cfce912c9j',
-  },
-  {
-    from: 'Adria Marti',
-    to: 'Amazon Boucher',
-    type: 'burned',
-    message: 'This is a regular burned transaction, where the employeed has tranformed the company tokens to a bouchure.',
-    amount: '34',
-    date: '12-12-2020',
-    id: '0x1e25112f2b5fcd3de05853ed97cd70eef2f11f126193ba5f10e208cfce912c9x',
-  },
-];
-
-const Component = () => {
+const Component = ({ transactions }) => {
 
   const getTranasctionType = (type) => {
     const transactionType = {
@@ -83,7 +51,17 @@ const Component = () => {
     )
   }
 
-  return (
+  const noResults = () => (
+    <Empty
+      description={
+        <Typography.Text>
+          No data available as no transactions are processed
+        </Typography.Text>
+      }
+    />
+  )
+
+  const getTransactions = () => (
     <StyledCollapse>
       {transactions.map(({ from, to, type, message, amount, date, id }) =>
         <Panel showArrow={false} header={getTransactionHeader(from, to)} key={id} extra={getTranasctionType(type)}>
@@ -115,11 +93,21 @@ const Component = () => {
         </Panel>
       )}
     </StyledCollapse>
+  )
+
+  return (
+    <div>
+      {transactions.length === 0 ? noResults() : getTransactions()}
+    </div>
   );
 }
 
-// Component.propTypes = {
-//   subpage: PropTypes.string.isRequired,
-// };
+Component.propTypes = {
+  transactions: PropTypes.array,
+};
+
+Component.defaultProps = {
+  transactions: [],
+};
 
 export default Component;

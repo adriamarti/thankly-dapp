@@ -88,9 +88,9 @@ router.post('/login', async (req, res) => {
     }
 
     // Worker data to be returned
-    const { _id, email, name, companyId, pathwayId } = registeredWorker;
+    const { _id, email, name, companyId, pathwayId, transactions } = registeredWorker;
 
-    return res.status(200).send({ _id, email, name, companyId, pathwayId });
+    return res.status(200).send({ _id, email, name, companyId, pathwayId, transactions });
 
   } catch(err) {
     return res.status(400).send(err);
@@ -128,17 +128,26 @@ router.get('/', async (req, res) => {
     const workers = await Worker.find(req.query);
 
     if (workers.length === 0) {
-      return res.status(400).send({
-        message: 'Fetch workers do not exist',
+      return res.status(200).send({
+        workers: [],
+        active: 0,
+        inactive: 0,
       });
     };
 
     // Workers data to be returned
-    const workersWithDataFiltered = workers.map(({ _id, name, pathwayId, active, email }) => {
-      return { _id, name, pathwayId, active, email }
+    const workersWithDataFiltered = workers.map(({ _id, name, pathwayId, active, email, transactions }) => {
+      return { _id, name, pathwayId, active, email, transactions }
     })
 
-    return res.status(200).send(workersWithDataFiltered);
+    // Get active users
+    const activeUsers = workersWithDataFiltered.filter(({ active }) => active === true);
+
+    return res.status(200).send({
+      workers: workersWithDataFiltered,
+      active: activeUsers.length,
+      inactive: workersWithDataFiltered.length - workersWithDataFiltered.length,
+    });
 
   } catch(err) {
     return res.status(400).send(err);
