@@ -37,5 +37,6 @@ export const POST = (path, body, options) => customFetch(path, {
 export const PUT = (path, body, options) => customFetch(path, {
   method: 'PUT',
   body: JSON.stringify(body),
+  headers: { 'Content-Type' : 'application/json' },
   ...options,
 });

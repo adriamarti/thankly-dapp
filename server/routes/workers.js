@@ -26,9 +26,9 @@ router.post('/pre-register', async (req, res) => {
     const worker = new Worker(workerPayload);
     const savedWorker = await worker.save(worker);
 
-    const { _id, name, email } = savedWorker;
+    const { _id, name, email, companyId, pathwayId, active } = savedWorker;
 
-    return res.status(200).send({ _id, name, email });
+    return res.status(200).send({ _id, name, email, companyId, pathwayId, active });
   } catch (err) {
     return res.status(400).send(err);
   }
@@ -146,7 +146,7 @@ router.get('/', async (req, res) => {
     return res.status(200).send({
       workers: workersWithDataFiltered,
       active: activeUsers.length,
-      inactive: workersWithDataFiltered.length - workersWithDataFiltered.length,
+      inactive: workers.length - activeUsers.length,
     });
 
   } catch(err) {

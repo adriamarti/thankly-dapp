@@ -3,16 +3,15 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import Component from './component';
-import { getWorkers } from '../../modules/workers/selectors';
-import { getPathways } from '../../modules/signIn/selectors';
+import { addPathwayRequested } from '../../../modules/signIn/action-creators'
 
 const mapStateToProps = (state) => ({
-  workers: getWorkers(state),
-  pathways: getPathways(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  
+  addPathway: (companyId, name, amount) => {
+    dispatch(addPathwayRequested(companyId, name, amount))
+  }
 });
 
 const enhance = compose(

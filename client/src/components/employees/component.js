@@ -11,8 +11,7 @@ import StyledComponents from './styles';
 
 const { ListItem, Actions } = StyledComponents;
 
-
-const Component = ({ workers }) => {
+const Component = ({ workers, pathways }) => {
 
   const avatar = (name) => {
     let initials = name.match(/\b\w/g) || [];
@@ -35,6 +34,12 @@ const Component = ({ workers }) => {
     />
   )
 
+  const getPathway = (pathwayId) => {
+    const [patwhay] = pathways.filter(({ _id }) => _id === pathwayId );
+
+    return patwhay.name;
+  }
+
   const employeesList = () => (
     <List
       itemLayout="horizontal"
@@ -44,7 +49,7 @@ const Component = ({ workers }) => {
           <List.Item.Meta
             avatar={avatar(item.name)}
             title={`${item.name} | ${item.email}`}
-            description={item.job}
+            description={getPathway(item.pathwayId)}
           />
           <Actions>
             <EditWorker />
@@ -64,10 +69,12 @@ const Component = ({ workers }) => {
 
 Component.propTypes = {
   workers: PropTypes.array,
+  pathways: PropTypes.array, 
 };
 
 Component.defaultProps = {
   workers: [],
+  pathways: [],
 };
 
 export default Component;

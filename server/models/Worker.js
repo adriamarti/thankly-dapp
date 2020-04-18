@@ -11,7 +11,7 @@ const workerSchema = new mongoose.Schema({
   },
   name: {
     type: String,
-    required: true,
+    required: false,
   },
   companyId: {
     type: mongoose.Types.ObjectId,

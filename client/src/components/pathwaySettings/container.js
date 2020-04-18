@@ -3,9 +3,11 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import Component from './component';
+import { getPathways, getUserId } from '../../modules/signIn/selectors';
 
-const mapStateToProps = (dispatch) => ({
-  
+const mapStateToProps = (state) => ({
+  pathways: getPathways(state),
+  companyId: getUserId(state).toString(),
 });
 
 const mapDispatchToProps = (dispatch) => ({

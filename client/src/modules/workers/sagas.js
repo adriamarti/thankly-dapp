@@ -1,15 +1,26 @@
 // External Dependencies
 import { takeLatest, put, call } from 'redux-saga/effects';
+import Web3 from 'web3';
 
 // Internal Dependencies
-import { GET } from '../../api';
+import { GET, POST } from '../../api';
 
 import {
   GET_WORKERS_REQUESTED,
   GET_WORKERS_SUCCEEDED,
   GET_WORKERS_FAILED,
+  REGISTER_WORKERS_REQUESTED,
+  REGISTER_WORKERS_SUCCEEDED,
+  REGISTER_WORKERS_FAILED
 } from './action-types';
 
+const registerWorkerIntoToken = async (companyId, contract, address) => {
+  try {
+    await contract.methods.registerWorker(companyId).send({ from: address })
+  } catch(err) {
+    throw err;
+  }
+}
 
 export function* getWorkers({ companyId }) {
   try {
@@ -21,6 +32,24 @@ export function* getWorkers({ companyId }) {
   }
 }
 
+export function* registerWorker({ companyId, email, name, pathwayId, contract, address }) {
+  console.log(companyId, email, name, pathwayId, contract, address)
+  let isRegisteredIntoDB = false;
+  try {
+    const data = yield call(POST, `workers/pre-register`, { companyId, email, name, pathwayId });
+    isRegisteredIntoDB = true;
+    registerWorkerIntoToken(Web3.utils.toHex(companyId), contract, address)
+    yield put({ type: REGISTER_WORKERS_SUCCEEDED, data });
+  } catch (error) {
+    if (isRegisteredIntoDB) {
+      // @TODO remove registered worker if fails something 
+    }
+    console.log(error)
+    yield put({ type: REGISTER_WORKERS_FAILED, error });
+  }
+}
+
 export default function* getWorkersSaga() {
   yield takeLatest(GET_WORKERS_REQUESTED, getWorkers);
+  yield takeLatest(REGISTER_WORKERS_REQUESTED, registerWorker);
 }
