@@ -10,6 +10,29 @@ export const createSmartContractInstance = (web3Instance, thanklyTokenContractAd
   }
 }
 
+export const getToken = async (contract, address) => {
+  console.log(contract, address)
+  try {
+    const token = await contract.methods.companyToken(address).call();
+
+    return token;
+  } catch(err) {
+    throw new Error(err);
+  }
+}
+
+// export const createToken = async (contract, address, name, symbol) => {
+//   try {
+//     const tokenCreated = await contract.methods
+//       .createToken(name, symbol)
+//       .send({ from: address });
+
+//     return tokenCreated;
+//   } catch(err) {
+//     throw new Error(err);
+//   }
+// }
+
 // export const registerComapny = async (ethereumAddress) => {
 //   try {
 
@@ -29,16 +52,6 @@ export const createSmartContractInstance = (web3Instance, thanklyTokenContractAd
 //     // return transaction;
 //   } catch(err) {
 //     console.log(JSON.stringify(err.message))
-//     throw new Error(err);
-//   }
-// }
-
-// export const getToken = async (companyAddress) => {
-//   try {
-//     const { name, symbol, active, registered } = await thanklyTokenContract.methods.companyToken(companyAddress).call();
-
-//     return { name, symbol, active, registered };
-//   } catch(err) {
 //     throw new Error(err);
 //   }
 // }

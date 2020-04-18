@@ -41,7 +41,7 @@ const Component = ({ workers, active, inactive }) => {
 }
 
 Component.propTypes = {
-  workers: PropTypes.object,
+  workers: PropTypes.array,
   active: PropTypes.number,
   inactive: PropTypes.number,
 };

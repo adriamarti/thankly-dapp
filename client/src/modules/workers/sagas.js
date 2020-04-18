@@ -12,10 +12,8 @@ import {
 
 
 export function* getWorkers({ companyId }) {
-  console.log(companyId)
   try {
     const data = yield call(GET, `workers?companyId=${companyId}`);
-    console.log(data)
     yield put({ type: GET_WORKERS_SUCCEEDED, data });
   } catch (error) {
     console.log(error)

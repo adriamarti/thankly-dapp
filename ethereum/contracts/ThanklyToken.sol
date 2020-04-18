@@ -26,6 +26,9 @@ contract ThanklyToken is Initializable, Ownable {
     string symbol;
     bool active;
     bool registered;
+    uint256 totalSupplied;
+    uint256 totalTransfered;
+    uint256 totalBurned;
     mapping (bytes32 => uint256) transferableTokens;
     mapping (bytes32 => uint256) burnableTokens;
   }
@@ -266,6 +269,9 @@ contract ThanklyToken is Initializable, Ownable {
     companyToken[msg.sender].symbol = _symbol;
     companyToken[msg.sender].active = true;
     companyToken[msg.sender].registered = true;
+    companyToken[msg.sender].totalSupplied = 0;
+    companyToken[msg.sender].totalTransfered = 0;
+    companyToken[msg.sender].totalBurned = 0;
 
     emit TokenCreated(_name, _symbol);
   }
@@ -340,6 +346,8 @@ contract ThanklyToken is Initializable, Ownable {
     refundExtraCosts(_amount)
   {
     companyToken[msg.sender].transferableTokens[_workerId] += _amount;
+    companyToken[msg.sender].totalSupplied += _amount;
+    companyToken[msg.sender].totalTransfered += _amount;
 
     emit TokensTransferedFromCompanyToWorker(_workerId, _amount);
   }
@@ -366,6 +374,8 @@ contract ThanklyToken is Initializable, Ownable {
 
     companyToken[companyAddress].transferableTokens[from] -= amount;
     companyToken[companyAddress].burnableTokens[to] += amount;
+    companyToken[msg.sender].totalTransfered -= _amount;
+    companyToken[msg.sender].totalBurned += _amount;
 
     emit TokensTransferedFromWorkerToWorker(from, to, amount);
   }

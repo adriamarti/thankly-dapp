@@ -1,5 +1,5 @@
 // External Dependencies
-import { takeLatest, put } from 'redux-saga/effects';
+import { takeLatest, put, call } from 'redux-saga/effects';
 import { createSmartContractInstance } from '../../ethereum'
 
 import {
@@ -36,7 +36,7 @@ export function* getEthereumNetwork() {
 
 export function* createContractInterface({ web3Instance, contractAddress}) {
   try {
-    const smartContractInstance = createSmartContractInstance(web3Instance, contractAddress);
+    const smartContractInstance = yield call(createSmartContractInstance, web3Instance, contractAddress);
     yield put({ type: SET_CONTRACT_INTERFACE, smartContractInstance });
   } catch (error) {
     console.log(error)

@@ -17,10 +17,10 @@ const Component = ({ token, user }) => {
       return (
         <div>
           <Typography.Text strong>
-            Adidas Dollar
+            {token.name}
           </Typography.Text>
           <Typography.Text code>
-            ADD
+            {token.symbol}
           </Typography.Text>
         </div>
       )

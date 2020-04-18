@@ -1,8 +1,9 @@
 // External Dependencies
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import { Statistic, Divider, Empty, Typography, Button } from 'antd';
-import { DollarOutlined, FireOutlined, SwapOutlined } from '@ant-design/icons';
+import { Statistic, Divider, Empty, Typography } from 'antd';
+import { FireOutlined, SwapOutlined } from '@ant-design/icons';
+import Action from './action'
 
 import 'antd/dist/antd.css'
 
@@ -13,19 +14,18 @@ const { TokenSuppliedCard } = StyledComponents;
 const Component = ({ token }) => {
 
   const getTokenData = () => {
-    const { symbol, totalTransferred, totalBurned } = token;
     if (token.name) {
-      const { symbol, totalTransferred, totalBurned } = token;
+      const { symbol, totalSupplied, totalTransfered, totalBurned } = token;
 
       return (
         <div>
           <div className='token-supplied-card-statistic'>
-            <Statistic title="Supplied" value={totalTransferred + totalBurned} prefix={<DollarOutlined />} suffix={symbol}/>
+            <Statistic title="Supplied" value={totalSupplied} suffix={symbol}/>
           </div>
           <Divider />
           <div className='token-supplied-card-statistic'>
-            <Statistic title="Transfered" value={totalTransferred} prefix={<SwapOutlined />} />
-            <Statistic title="Burned" value={totalBurned} prefix={<FireOutlined />} />
+            <Statistic title="Transfered" value={totalTransfered} prefix={<SwapOutlined />} suffix={symbol} />
+            <Statistic title="Burned" value={totalBurned} prefix={<FireOutlined />} suffix={symbol} />
           </div>
         </div>
       )
@@ -39,7 +39,7 @@ const Component = ({ token }) => {
           </Typography.Text>
         }
       >
-        <Button type="primary">Create My Token</Button>
+        <Action />
       </Empty>
     )
   }

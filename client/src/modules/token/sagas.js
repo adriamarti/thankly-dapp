@@ -10,9 +10,10 @@ import {
   GET_TOKEN_FAILED,
 } from './action-types';
 
-export function* getToken({ companyAddress }) {
+export function* getTokenData({ contract, address }) {
+  console.log(contract, address)
   try {
-    const data = yield call(getToken, companyAddress);
+    const data = yield call(getToken, contract, address);
     yield put({ type: GET_TOKEN_SUCCEEDED, data });
   } catch (error) {
     console.log(error)
@@ -21,5 +22,5 @@ export function* getToken({ companyAddress }) {
 }
 
 export default function* getTokenSaga() {
-  yield takeLatest(GET_TOKEN_REQUESTED, getToken);
+  yield takeLatest(GET_TOKEN_REQUESTED, getTokenData);
 }

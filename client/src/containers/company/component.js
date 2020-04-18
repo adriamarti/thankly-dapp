@@ -21,7 +21,7 @@ const { StyledContent, TransactionHeader } = StyledComponents;
 const { Title, Paragraph, Text } = Typography;
 const { TabPane } = Tabs;
 
-const Component = ({ content, getWorkers, id }) => {
+const Component = ({ content, getWorkers, id, address, getToken, contract }) => {
 
   const getTranasctionType = (type) => {
     const transactionType = {
@@ -102,7 +102,8 @@ const Component = ({ content, getWorkers, id }) => {
   }
 
   useEffect(() => {
-    getWorkers(id)
+    getWorkers(id);
+    getToken(contract, address);
   }, [])
 
   return (
@@ -129,7 +130,10 @@ const Component = ({ content, getWorkers, id }) => {
 
 Component.propTypes = {
   getWorkers: PropTypes.func.isRequired,
+  getToken: PropTypes.func.isRequired,
   id: PropTypes.string.isRequired,
+  address: PropTypes.string.isRequired,
+  contract: PropTypes.object.isRequired,
 };
 
 export default Component;

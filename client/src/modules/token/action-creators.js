@@ -3,7 +3,8 @@ import {
   GET_TOKEN_REQUESTED,
 } from './action-types';
 
-export const getTokenRequested = (companyAddress) => ({
+export const getTokenRequested = (contract, address) => ({
   type: GET_TOKEN_REQUESTED,
-  companyAddress,
+  contract,
+  address,
 });

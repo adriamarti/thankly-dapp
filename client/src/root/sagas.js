@@ -8,6 +8,7 @@ import signIn from '../modules/signIn/sagas';
 import ethereum from '../modules/ethereum/sagas';
 import signUp from '../modules/signUp/sagas';
 import workers from '../modules/workers/sagas';
+import token from '../modules/token/sagas';
 
 export default function* sagas() {
   // Pages
@@ -17,4 +18,5 @@ export default function* sagas() {
   yield fork(signUp);
   yield fork(signIn);
   yield fork(workers);
+  yield fork(token);
 }
