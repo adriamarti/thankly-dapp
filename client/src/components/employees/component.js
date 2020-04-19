@@ -37,7 +37,7 @@ const Component = ({ workers, pathways }) => {
   const getPathway = (pathwayId) => {
     const [patwhay] = pathways.filter(({ _id }) => _id === pathwayId );
 
-    return patwhay.name;
+    return patwhay;
   }
 
   const employeesList = () => (
@@ -49,11 +49,11 @@ const Component = ({ workers, pathways }) => {
           <List.Item.Meta
             avatar={avatar(item.name)}
             title={`${item.name} | ${item.email}`}
-            description={getPathway(item.pathwayId)}
+            description={getPathway(item.pathwayId).name}
           />
           <Actions>
             <EditWorker />
-            <TransferTokensToWorker />
+            <TransferTokensToWorker amount={getPathway(item.pathwayId).amount} workerId={item._id}/>
           </Actions>
         </ListItem>
       )}
@@ -68,13 +68,8 @@ const Component = ({ workers, pathways }) => {
 }
 
 Component.propTypes = {
-  workers: PropTypes.array,
-  pathways: PropTypes.array, 
-};
-
-Component.defaultProps = {
-  workers: [],
-  pathways: [],
+  workers: PropTypes.array.isRequired,
+  pathways: PropTypes.array.isRequired, 
 };
 
 export default Component;

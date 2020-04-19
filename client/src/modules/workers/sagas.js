@@ -3,7 +3,7 @@ import { takeLatest, put, call } from 'redux-saga/effects';
 import Web3 from 'web3';
 
 // Internal Dependencies
-import { GET, POST } from '../../api';
+import { GET, POST, PUT } from '../../api';
 
 import {
   GET_WORKERS_REQUESTED,
@@ -11,7 +11,10 @@ import {
   GET_WORKERS_FAILED,
   REGISTER_WORKERS_REQUESTED,
   REGISTER_WORKERS_SUCCEEDED,
-  REGISTER_WORKERS_FAILED
+  REGISTER_WORKERS_FAILED,
+  ADD_TRANSACTION_REQUESTED,
+  ADD_TRANSACTION_SUCCEEDED,
+  ADD_TRANSACTION_FAILED,
 } from './action-types';
 
 const registerWorkerIntoToken = async (companyId, contract, address) => {
@@ -38,7 +41,7 @@ export function* registerWorker({ companyId, email, name, pathwayId, contract, a
   try {
     const data = yield call(POST, `workers/pre-register`, { companyId, email, name, pathwayId });
     isRegisteredIntoDB = true;
-    registerWorkerIntoToken(Web3.utils.toHex(companyId), contract, address)
+    registerWorkerIntoToken(Web3.utils.toHex(data._id), contract, address)
     yield put({ type: REGISTER_WORKERS_SUCCEEDED, data });
   } catch (error) {
     if (isRegisteredIntoDB) {
@@ -49,7 +52,18 @@ export function* registerWorker({ companyId, email, name, pathwayId, contract, a
   }
 }
 
+export function* addTransaction({ transactions }) {
+  try {
+    yield call(PUT, `workers/${transactions.to}`, { transactions });
+    yield put({ type: ADD_TRANSACTION_SUCCEEDED, transactions });
+  } catch (error) {
+    console.log(error)
+    yield put({ type: ADD_TRANSACTION_FAILED, error });
+  }
+}
+
 export default function* getWorkersSaga() {
   yield takeLatest(GET_WORKERS_REQUESTED, getWorkers);
   yield takeLatest(REGISTER_WORKERS_REQUESTED, registerWorker);
+  yield takeLatest(ADD_TRANSACTION_REQUESTED, addTransaction);
 }

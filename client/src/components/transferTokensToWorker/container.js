@@ -3,13 +3,22 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import Component from './component';
+import { getUserId } from '../../modules/signIn/selectors';
+import { getSelectedAddress, getSmartContractInstance } from '../../modules/ethereum/selectors';
+import { getToken } from '../../modules/token/selectors';
+import { addTransactionRequested } from '../../modules/workers/action-creators'
 
-const mapStateToProps = (dispatch) => ({
-  
+const mapStateToProps = (state) => ({
+  token: getToken(state),
+  id: getUserId(state),
+  address: getSelectedAddress(state),
+  contract: getSmartContractInstance(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  
+  addTransaction: (transaction) => {
+    dispatch(addTransactionRequested(transaction))
+  }
 });
 
 const enhance = compose(

@@ -108,6 +108,15 @@ router.put('/:id', async (req, res) => {
       });
     };
 
+    console.log(req.body.transactions)
+
+    // Add all previous transactions to not override the old ones
+    if (req.body.transactions) {
+      req.body.transactions = [...worker.transactions, req.body.transactions];
+    }
+
+    console.log(req.body.transactions)
+
     // Update Worker data
     const updatedData = Object.assign(worker, req.body);
     const updatedWorker = await Worker.updateOne(

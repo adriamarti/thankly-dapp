@@ -1,9 +1,10 @@
 // External Dependencies
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Modal, Typography, Form, Input } from 'antd';
+import { Button, Modal, Typography, Result } from 'antd';
 import { SwapOutlined } from '@ant-design/icons';
 import StyledComponents from './styles';
+import Web3 from 'web3';
 
 import 'antd/dist/antd.css'
 
@@ -11,46 +12,96 @@ const { Text, Title } = Typography;
 
 const { Amount } = StyledComponents;
 
-const Component = () => {
-  const [registerForm] = Form.useForm();
-  const [registerModalVisible, setRegisterModalVisible] = useState(false);
-  const [isProcessingRegistration, setIsProcessingRegistration] = useState(false);
-  const [isSuccessRegistered, setIsSuccessRegistered] = useState(false);
+const Component = ({ addTransaction, id, workerId, contract, address, amount, token }) => {
+  const [sendTokensModalVisibile, setSendTokensModalVisibile] = useState(false);
+  const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
+  const [isSuccessTransfered, setIsSuccessTransfered] = useState(false);
 
-  const toggleModalVisibility = (isVisible) => {
-    setRegisterModalVisible(isVisible);
-  };
+  const handleSubmit = async () => {
+    setIsProcessingTransaction(true);
 
-  const handleSubmit = () => {
-    const amount = '20';
+    try {
+      const transacionCost = +amount * Web3.utils.toWei('1', 'shannon');;
+      const transactionFee = transacionCost * 10 / 100;
+      const totalTransactionCost = `${transacionCost + transactionFee}`;
+      const workerIdHex = Web3.utils.toHex(workerId);
+      // const { transactionHash, transactionIndex, blockHash, blockNumber } = await contract.methods
+      //   .transferTokensFromCompanyToWorker(workerIdHex, amount)
+      //   .send({ from: address, value: totalTransactionCost })
+      const transactionPayload = {
+        transactionHash: 'transactionHash',
+        transactionIndex: 'transactionIndex',
+        blockHash: 'blockHash',
+        blockNumber: 'blockNumber',
+        from: id,
+        to: workerId,
+        amount: amount,
+        date: new Date(),
+        type: 'transferable',
+      }
+      addTransaction(transactionPayload);
+      setIsSuccessTransfered(true);
+      setIsProcessingTransaction(false);
+    } catch (err) {
+      console.log(err)
+    }
 
     console.log('Amount transfered')
-    toggleModalVisibility(false);
   };
+
+  const getInitialTest = () => (
+    <div>
+      <Text>
+        Following your configuration about how many tokens should be transfered to this employee based on her/his pathway you will transfer:
+      </Text>
+      <Amount>
+        <Text strong>{amount}</Text>
+        <Text>{token.symbol}</Text>
+      </Amount>
+    </div>
+  )
+
+  const getResult = () => (
+    <Result
+      status="success"
+      title="Tokens transferred successfuly"
+    />
+  )
+  
+  // Close modal and reset everything
+  const closeModal = () => {
+    setIsProcessingTransaction(false);
+    setIsSuccessTransfered(false);
+    setSendTokensModalVisibile(false);
+  }
 
   return (
     <div>
-      <Button type="primary" shape="circle" onClick={() => toggleModalVisibility(true)} icon={<SwapOutlined />} />
+      <Button type="primary" shape="circle" onClick={() => setSendTokensModalVisibile(true)} icon={<SwapOutlined />} />
       <Modal
         title="Transfer tokens to the employee"
-        visible={registerModalVisible}
-        onOk={() => handleSubmit()}
-        onCancel={() => toggleModalVisibility(false)}
+        visible={sendTokensModalVisibile}
+        onCancel={() => closeModal()}
+        footer={[
+          <Button key="confirm" type="primary" disabled={isSuccessTransfered} loading={isProcessingTransaction} onClick={() => handleSubmit()}>
+            Create Token
+          </Button>,
+        ]}
       >
-        <Text>
-          Following your configuration about how many tokens should be transfered to this employee based on her/his pathway you will transfer:
-        </Text>
-        <Amount>
-          <Text strong>20</Text>
-          <Text>ADD</Text>
-        </Amount>
+        {isSuccessTransfered ? getResult() : getInitialTest()}
       </Modal>
     </div>
   );
 }
 
-// Component.propTypes = {
-//   subpage: PropTypes.string.isRequired,
-// };
+Component.propTypes = {
+  addTransaction: PropTypes.func.isRequired,
+  token: PropTypes.object.isRequired,
+  id: PropTypes.string.isRequired,
+  workerId: PropTypes.string.isRequired,
+  address: PropTypes.string.isRequired,
+  amount: PropTypes.string.isRequired,
+  contract: PropTypes.object.isRequired,
+};
 
 export default Component;

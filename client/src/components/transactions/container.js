@@ -3,10 +3,12 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import Component from './component';
-import { getUserTransactions } from '../../modules/signIn/selectors';
+import { getWorkers } from '../../modules/workers/selectors'
+import { getUser } from '../../modules/signIn/selectors';
 
 const mapStateToProps = (state) => ({
-  transactions: getUserTransactions(state)
+  workers: getWorkers(state),
+  user: getUser(state),
 });
 
 const mapDispatchToProps = (dispatch) => ({

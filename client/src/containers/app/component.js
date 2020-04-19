@@ -1,6 +1,5 @@
 // External Dependencies
 import React, { useEffect } from 'react';
-import ThanklyToken from '../../ethereum/contracts/ThanklyToken.json';
 import Web3 from 'web3';
 
 // Internal Dependencies
@@ -20,10 +19,8 @@ const App = ({ getEthereumAddress, getEthereumNetwork, setSmartContract }) => {
 
     // Set ThanklyToken Smart Contract Interface
     const web3 = new Web3(ethereum);
-    const thanklyTokenContractAddress = '0xd9B209B6354DA95Cb3cbCE553b5814E97C0CA21b';
+    const thanklyTokenContractAddress = '0xEB829Fe5Bd0A9e4827e9acFE0e894657a9eDb52a';
     setSmartContract(web3, thanklyTokenContractAddress)
-    // const thanklyTokenContract = new web3.eth.Contract(ThanklyTokenJsonInterface.abi, thanklyTokenContractAddress);
-
 
     // Subscribe on account change
     ethereum.on('accountsChanged', () => {

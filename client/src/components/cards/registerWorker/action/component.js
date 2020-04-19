@@ -35,6 +35,7 @@ const Component = ({ token, pathways, registerWorker, id, contract, address, wor
       registerWorker(id, name, email, selectedPathway, contract, address);
       setRegisteredEmail(email);
       setIsSuccessRegistered(true);
+      isProcessingRegistration(false);
     } catch(err) {
       console.log(err)
     }

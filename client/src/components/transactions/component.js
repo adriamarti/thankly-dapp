@@ -13,9 +13,29 @@ const { Item } = List;
 const { Panel } = Collapse;
 const { StyledCollapse, TransactionHeader } = StyledComponents;
 
-const Component = ({ transactions }) => {
+const Component = ({ workers, user }) => {
 
-  const getTranasctionType = (type) => {
+  const getWorkerName = (workerId) => {
+    const [worker] = workers.filter(({ _id, name }) => _id === workerId);
+
+    if (worker && worker.name) {
+      return worker.name
+    }
+    
+    return user.name;
+  }
+
+  const getTransactionsFromWorkers = () => {
+    let transactions = [];
+    workers.forEach((worker) => {
+      console.log(transactions)
+      transactions.push(...worker.transactions);
+    })
+
+    return transactions
+  }
+
+  const getTranasctionType = (type, amount) => {
     const transactionType = {
       transferable: {
         color: '#7dd068',
@@ -33,7 +53,7 @@ const Component = ({ transactions }) => {
 
     return (
       <Statistic
-        value={11}
+        value={amount}
         valueStyle={{ color: transactionType[type].color }}
         prefix={transactionType[type].icon}
       />
@@ -44,9 +64,9 @@ const Component = ({ transactions }) => {
     return (
       <TransactionHeader>
         <Text type="secondary">From</Text>
-        <Text strong>{from}</Text>
+        <Text strong>{getWorkerName(from)}</Text>
         <Text type="secondary">to</Text>
-        <Text strong>{to}</Text>
+        <Text strong>{getWorkerName(to)}</Text>
       </TransactionHeader>
     )
   }
@@ -61,16 +81,21 @@ const Component = ({ transactions }) => {
     />
   )
 
+  const transactions = getTransactionsFromWorkers();
+
+  console.log(transactions);
+  console.log(workers);
+
   const getTransactions = () => (
     <StyledCollapse>
-      {transactions.map(({ from, to, type, message, amount, date, id }) =>
-        <Panel showArrow={false} header={getTransactionHeader(from, to)} key={id} extra={getTranasctionType(type)}>
+      {transactions.map(({ transactionHash, from, to, type, message, amount, date }) =>
+        <Panel showArrow={false} header={getTransactionHeader(from, to)} key={transactionHash} extra={getTranasctionType(type, amount)}>
           <List size="small">
             <Item>
               <Typography.Text>
                 <InfoCircleOutlined />
                 <Typography.Text copyable>
-                  {id}
+                  {transactionHash}
                 </Typography.Text>
               </Typography.Text>
             </Item>
@@ -103,11 +128,13 @@ const Component = ({ transactions }) => {
 }
 
 Component.propTypes = {
-  transactions: PropTypes.array,
+  user: PropTypes.object,
+  workers: PropTypes.array,
 };
 
 Component.defaultProps = {
-  transactions: [],
+  user: {},
+  workers: [],
 };
 
 export default Component;
