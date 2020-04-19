@@ -1,11 +1,7 @@
 // External Dependencies
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Form, Input, Typography, Radio } from 'antd';
-import { SwapOutlined } from '@ant-design/icons';
-import EditWorker from '../editWorker';
-import TransferTokensToWorker from '../transferTokensToWorker';
-import { getAccounts } from '../../ethereum'
+import { Form, Input, Radio } from 'antd';
 
 import 'antd/dist/antd.css'
 
@@ -17,9 +13,7 @@ const Component = ({ user, signIn, ethereumAddress, history }) => {
   const [signInForm] = Form.useForm();
   const [typeOfUser, setTypeOfUsers] = useState('companies');
   const [showMetamaskWarning, setShowMetamaskWarning] = useState(false);
-  const [ethAccounts, setEthAccounts] = useState([]);
   const [isProcessingSignIn, setIsProcessingSignIn] = useState(false);
-  const [isSuccessSignedIn, setIsSuccessSignedIn] = useState(false);
   const [buttonText, setButtonText] = useState('Sign In');
 
   const showWarning = () => {
@@ -63,7 +57,7 @@ const Component = ({ user, signIn, ethereumAddress, history }) => {
   }
 
   return (
-    <StyledForm name="basic" form={signInForm} name="register" onFinish={onFinish}>
+    <StyledForm name="sign_in" form={signInForm} onFinish={onFinish}>
       {showMetamaskWarning && <Text type="warning">You need to enable Metamask</Text>}
       <RadioGroup onChange={onChangeTypeOfUser} value={typeOfUser}>
         <Radio value="companies">Company</Radio>

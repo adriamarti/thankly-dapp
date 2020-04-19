@@ -7,11 +7,13 @@ import token from './token/reducer';
 import ethereum from './ethereum/reducer';
 import registration from './signUp/reducer';
 import workers from './workers/reducer';
+import company from './company/reducer';
 
 export default combineReducers({
   user,
   token,
   ethereum,
   registration,
-  workers
+  workers,
+  company,
 });

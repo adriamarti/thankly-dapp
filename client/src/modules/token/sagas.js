@@ -10,10 +10,9 @@ import {
   GET_TOKEN_FAILED,
 } from './action-types';
 
-export function* getTokenData({ contract, address }) {
-  console.log(contract, address)
+export function* getTokenData( { contract, address, workerId }) {
   try {
-    const data = yield call(getToken, contract, address);
+    const data = yield call(getToken, contract, address, workerId);
     yield put({ type: GET_TOKEN_SUCCEEDED, data });
   } catch (error) {
     console.log(error)

@@ -11,8 +11,7 @@ import StyledComponents from './styles';
 
 const { ListItem, Actions } = StyledComponents;
 
-const Component = ({ workers, pathways }) => {
-
+const Component = ({ id, workers, pathways, pathwaysFromCompany, location }) => {
   const avatar = (name) => {
     let initials = name.match(/\b\w/g) || [];
     initials = ((initials.shift() || '') + (initials.pop() || '')).toUpperCase();
@@ -23,6 +22,8 @@ const Component = ({ workers, pathways }) => {
       </Avatar>
     )
   }
+
+  const userLoggedIsWorker = () => location.pathname.includes('worker');
 
   const noResults = () => (
     <Empty
@@ -35,15 +36,39 @@ const Component = ({ workers, pathways }) => {
   )
 
   const getPathway = (pathwayId) => {
-    const [patwhay] = pathways.filter(({ _id }) => _id === pathwayId );
+    const payhwaysToFilter = userLoggedIsWorker() ? pathwaysFromCompany : pathways;
+
+    const [patwhay] = payhwaysToFilter.filter(({ _id }) => _id === pathwayId );
 
     return patwhay;
+  }
+
+  const canBeRendered = () => {
+    if (workers.length > 0) {
+      if (userLoggedIsWorker() && pathwaysFromCompany.length > 0) {
+        return true;
+      }
+
+      if (pathways.length > 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  const getWorkersToRender = () => {
+    if (userLoggedIsWorker()) {
+      return workers.filter(({ _id }) => _id !== id)
+    }
+
+    return workers;
   }
 
   const employeesList = () => (
     <List
       itemLayout="horizontal"
-      dataSource={workers}
+      dataSource={getWorkersToRender()}
       renderItem={item => (
         <ListItem>
           <List.Item.Meta
@@ -51,10 +76,13 @@ const Component = ({ workers, pathways }) => {
             title={`${item.name} | ${item.email}`}
             description={getPathway(item.pathwayId).name}
           />
-          <Actions>
-            <EditWorker />
-            <TransferTokensToWorker amount={getPathway(item.pathwayId).amount} workerId={item._id}/>
-          </Actions>
+          {
+            !userLoggedIsWorker() &&
+            <Actions>
+              <EditWorker />
+              <TransferTokensToWorker amount={getPathway(item.pathwayId).amount} workerId={item._id}/>
+            </Actions>
+          }
         </ListItem>
       )}
     />
@@ -62,14 +90,23 @@ const Component = ({ workers, pathways }) => {
 
   return (
     <div>
-      {workers.length === 0 ? noResults() : employeesList()}
+      {canBeRendered() ? employeesList() : noResults()}
     </div>
   );
 }
 
 Component.propTypes = {
-  workers: PropTypes.array.isRequired,
-  pathways: PropTypes.array.isRequired, 
+  id: PropTypes.string.isRequired,
+  location: PropTypes.object.isRequired,
+  workers: PropTypes.array,
+  pathways: PropTypes.array,
+  pathwaysFromCompany: PropTypes.array,
+};
+
+Component.defaultProps = {
+  workers: [],
+  pathways: [],
+  pathwaysFromCompany: []
 };
 
 export default Component;

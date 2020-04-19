@@ -8,11 +8,11 @@ import Web3 from 'web3';
 
 import 'antd/dist/antd.css'
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 const { Amount } = StyledComponents;
 
-const Component = ({ addTransaction, id, workerId, contract, address, amount, token }) => {
+const Component = ({ updateToken, addTransaction, id, workerId, contract, address, amount, token }) => {
   const [sendTokensModalVisibile, setSendTokensModalVisibile] = useState(false);
   const [isProcessingTransaction, setIsProcessingTransaction] = useState(false);
   const [isSuccessTransfered, setIsSuccessTransfered] = useState(false);
@@ -25,14 +25,14 @@ const Component = ({ addTransaction, id, workerId, contract, address, amount, to
       const transactionFee = transacionCost * 10 / 100;
       const totalTransactionCost = `${transacionCost + transactionFee}`;
       const workerIdHex = Web3.utils.toHex(workerId);
-      // const { transactionHash, transactionIndex, blockHash, blockNumber } = await contract.methods
-      //   .transferTokensFromCompanyToWorker(workerIdHex, amount)
-      //   .send({ from: address, value: totalTransactionCost })
+      const { transactionHash, transactionIndex, blockHash, blockNumber } = await contract.methods
+        .transferTokensFromCompanyToWorker(workerIdHex, amount)
+        .send({ from: address, value: totalTransactionCost })
       const transactionPayload = {
-        transactionHash: 'transactionHash',
-        transactionIndex: 'transactionIndex',
-        blockHash: 'blockHash',
-        blockNumber: 'blockNumber',
+        transactionHash,
+        transactionIndex,
+        blockHash,
+        blockNumber,
         from: id,
         to: workerId,
         amount: amount,
@@ -40,6 +40,7 @@ const Component = ({ addTransaction, id, workerId, contract, address, amount, to
         type: 'transferable',
       }
       addTransaction(transactionPayload);
+      updateToken(contract, address);
       setIsSuccessTransfered(true);
       setIsProcessingTransaction(false);
     } catch (err) {
@@ -95,6 +96,7 @@ const Component = ({ addTransaction, id, workerId, contract, address, amount, to
 }
 
 Component.propTypes = {
+  updateToken: PropTypes.func.isRequired,
   addTransaction: PropTypes.func.isRequired,
   token: PropTypes.object.isRequired,
   id: PropTypes.string.isRequired,

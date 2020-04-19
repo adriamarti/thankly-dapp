@@ -1,3 +1,5 @@
+http://localhost:3000/confirm-account?email=leo@gmail.com
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

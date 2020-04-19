@@ -1,4 +1,5 @@
 import ThanklyTokenJsonInterface from './contracts/ThanklyToken.json';
+import Web3 from 'web3';
 
 export const createSmartContractInstance = (web3Instance, thanklyTokenContractAddress) => {
   try {
@@ -10,10 +11,25 @@ export const createSmartContractInstance = (web3Instance, thanklyTokenContractAd
   }
 }
 
-export const getToken = async (contract, address) => {
-  console.log(contract, address)
+export const getToken = async (contract, address, workerId = null) => {
   try {
     const token = await contract.methods.companyToken(address).call();
+    if (workerId) {
+      const { transferableTokens, burnableTokens } = await contract.methods
+        .workerBalance(Web3.utils.toHex(workerId), address).call();
+      token.balance = {
+        transferableTokens,
+        burnableTokens
+      }
+
+      const { name, symbol, totalSupplied, totalTransfered, totalBurned, balance } = token;
+
+      return { name, symbol, totalSupplied, totalTransfered, totalBurned, balance }
+    }
+
+    const { name, symbol, totalSupplied, totalTransfered, totalBurned } = token;
+
+    return { name, symbol, totalSupplied, totalTransfered, totalBurned };
 
     return token;
   } catch(err) {

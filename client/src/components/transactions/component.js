@@ -16,12 +16,12 @@ const { StyledCollapse, TransactionHeader } = StyledComponents;
 const Component = ({ workers, user }) => {
 
   const getWorkerName = (workerId) => {
-    const [worker] = workers.filter(({ _id, name }) => _id === workerId);
+    const [worker] = workers.filter(({ _id }) => _id === workerId);
 
     if (worker && worker.name) {
       return worker.name
     }
-    
+
     return user.name;
   }
 

@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Button, Modal, Form, Input, Result } from 'antd';
-import { DollarCircleOutlined } from '@ant-design/icons';
+import { FireOutlined } from '@ant-design/icons';
 import StyledComponents from './styles';
 
 import 'antd/dist/antd.css'
 
-const { StyledForm } = StyledComponents;
+const { Wrapper, StyledForm } = StyledComponents;
 
 const Component = ({ address, contract }) => {
   const [createTokenForm] = Form.useForm();
@@ -58,9 +58,9 @@ const Component = ({ address, contract }) => {
     />
   )
   return (
-    <div>
-      <Button type="primary" icon={<DollarCircleOutlined />} onClick={() => toggleModalVisibility(true)}>
-        Create your Token
+    <Wrapper>
+      <Button type="primary" icon={<FireOutlined />} onClick={() => toggleModalVisibility(true)}>
+        Burn Tokens
       </Button>
       <Modal
         title="Fill the data of your token"
@@ -68,13 +68,13 @@ const Component = ({ address, contract }) => {
         onCancel={() => toggleModalVisibility(false)}
         footer={[
           <Button key="confirm" type="primary" disabled={isSuccessCreated} loading={isProcessingTokenCreation} onClick={() => handleSubmit()}>
-            Create Token
+            Burn Tokens
           </Button>,
         ]}
       >
         {isSuccessCreated ? getResult() : getForm()}
       </Modal>
-    </div>
+    </Wrapper>
   );
 }
 

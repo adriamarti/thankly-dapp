@@ -107,9 +107,9 @@ router.get('/:id', async (req, res) => {
     };
 
     // Company data to be returned
-    const { _id, email, name, ethereumAddress } = company;
+    const { _id, email, name, ethereumAddress, pathways } = company;
 
-    return res.status(200).send({ _id, email, name, ethereumAddress });
+    return res.status(200).send({ _id, email, name, ethereumAddress, pathways });
 
   } catch(err) {
     return res.status(400).send(err);

@@ -32,10 +32,10 @@ const Component = ({ token, pathways, registerWorker, id, contract, address, wor
     const email = getFieldValue('email');
 
     try {
-      registerWorker(id, name, email, selectedPathway, contract, address);
+      registerWorker(id, email, name, selectedPathway, contract, address);
       setRegisteredEmail(email);
       setIsSuccessRegistered(true);
-      isProcessingRegistration(false);
+      setIsProcessingRegistration(false);
     } catch(err) {
       console.log(err)
     }

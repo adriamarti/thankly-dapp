@@ -1,7 +1,7 @@
 // External Dependencies
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Layout, Row, Typography, Col, Tabs, Statistic } from 'antd';
+import { Layout, Row, Typography, Col, Tabs } from 'antd';
 import AppHeader from '../../components/headers/app';
 import Sider from '../../components/sider'
 import Employees from '../../components/employees'
@@ -11,53 +11,16 @@ import TokenSuppliedCard from '../../components/cards/tokenSupplied';
 import WorkersCard from '../../components/cards/workers';
 import AccountSettings from '../../components/accountSettings';
 import PathwaySettings from '../../components/pathwaySettings';
-import { FireOutlined, SwapOutlined } from '@ant-design/icons';
 
 import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { StyledContent, TransactionHeader } = StyledComponents;
-const { Title, Paragraph, Text } = Typography;
+const { StyledContent } = StyledComponents;
+const { Title, Paragraph } = Typography;
 const { TabPane } = Tabs;
 
 const Component = ({ content, getWorkers, id, address, getToken, contract }) => {
-
-  const getTranasctionType = (type) => {
-    const transactionType = {
-      transferable: {
-        color: '#7dd068',
-        icon: <SwapOutlined />,
-      },
-      burnable: {
-        color: '#faad14',
-        icon: <SwapOutlined />,
-      },
-      burned: {
-        color: '#ff4d4f',
-        icon: <FireOutlined />,
-      }
-    };
-
-    return (
-      <Statistic
-        value={11}
-        valueStyle={{ color: transactionType[type].color }}
-        prefix={transactionType[type].icon}
-      />
-    )
-  }
-
-  const transactionHeader = () => {
-    return (
-      <TransactionHeader>
-        <Text type="secondary">From</Text>
-        <Text strong>Adria Marti</Text>
-        <Text type="secondary">to</Text>
-        <Text strong>Dunyazath Salazar</Text>
-      </TransactionHeader>
-    )
-  }
 
   const getContent = (content) => {
     if (content === 'settings') {
