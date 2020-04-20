@@ -1,5 +1,5 @@
 // External Dependencies
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Typography, Statistic, List, Collapse, Empty } from 'antd';
 import { FireOutlined, SwapOutlined, InfoCircleOutlined, ClockCircleOutlined } from '@ant-design/icons';
@@ -13,7 +13,8 @@ const { Item } = List;
 const { Panel } = Collapse;
 const { StyledCollapse, TransactionHeader } = StyledComponents;
 
-const Component = ({ workers, user }) => {
+const Component = ({ companyName, transactions, workers, user, location }) => {
+  const [allTransactions, setAllTransactions] = useState(transactions); 
 
   const getWorkerName = (workerId) => {
     const [worker] = workers.filter(({ _id }) => _id === workerId);
@@ -22,17 +23,24 @@ const Component = ({ workers, user }) => {
       return worker.name
     }
 
+    if (userLoggedIsWorker()) {
+      return companyName;
+    }
+
     return user.name;
   }
 
   const getTransactionsFromWorkers = () => {
     let transactions = [];
     workers.forEach((worker) => {
-      console.log(transactions)
       transactions.push(...worker.transactions);
     })
 
-    return transactions
+    return transactions.filter((transaction, index, self) =>
+      index === self.findIndex((t) => (
+        t.transactionHash === transaction.transactionHash
+      ))
+    )
   }
 
   const getTranasctionType = (type, amount) => {
@@ -81,14 +89,21 @@ const Component = ({ workers, user }) => {
     />
   )
 
-  const transactions = getTransactionsFromWorkers();
+  const userLoggedIsWorker = () => location.pathname.includes('worker');
 
-  console.log(transactions);
-  console.log(workers);
+  useEffect(() => {
+    console.log(transactions);
+    if (userLoggedIsWorker()) {
+      return setAllTransactions(transactions)
+    }
+
+    setAllTransactions(getTransactionsFromWorkers())
+  }, [transactions, workers])
+
 
   const getTransactions = () => (
     <StyledCollapse>
-      {transactions.map(({ transactionHash, from, to, type, message, amount, date }) =>
+      {allTransactions.map(({ transactionHash, from, to, type, description, amount, date }) =>
         <Panel showArrow={false} header={getTransactionHeader(from, to)} key={transactionHash} extra={getTranasctionType(type, amount)}>
           <List size="small">
             <Item>
@@ -110,7 +125,7 @@ const Component = ({ workers, user }) => {
             <Item>
               <Typography.Text>
                 <Typography.Text>
-                  {message}
+                  {description && description.length > 0 ? description : 'I hope you use this amount of transferable tokens on a responsive way! :)'}
                 </Typography.Text>
               </Typography.Text>
             </Item>
@@ -122,17 +137,21 @@ const Component = ({ workers, user }) => {
 
   return (
     <div>
-      {transactions.length === 0 ? noResults() : getTransactions()}
+      {allTransactions.length === 0 ? noResults() : getTransactions()}
     </div>
   );
 }
 
 Component.propTypes = {
+  companyName: PropTypes.string,
+  transactions: PropTypes.array,
   user: PropTypes.object,
   workers: PropTypes.array,
 };
 
 Component.defaultProps = {
+  companyName: '',
+  transactions: [],
   user: {},
   workers: [],
 };

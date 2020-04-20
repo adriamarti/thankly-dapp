@@ -6,6 +6,7 @@ import {
   GET_WORKERS_SUCCEEDED,
   REGISTER_WORKERS_SUCCEEDED,
   ADD_TRANSACTION_SUCCEEDED,
+  SEND_TOKENS_SUCCEEDED,
 } from './action-types';
 
 const initialState = {};
@@ -22,6 +23,7 @@ export function addRegisteredWorker(state, { data }) {
 }
 
 export function addTransaction(state, { transactions }) {
+  console.log(transactions)
   return update(state, {
     workers: { $apply: function(workers) {
       return workers.map((worker) => {
@@ -52,6 +54,8 @@ export default function workersReducer(state = initialState, action) {
     case REGISTER_WORKERS_SUCCEEDED:
       return addRegisteredWorker(state, action);
     case ADD_TRANSACTION_SUCCEEDED:
+      return addTransaction(state, action);
+    case SEND_TOKENS_SUCCEEDED:
       return addTransaction(state, action);
     default:
       return state;

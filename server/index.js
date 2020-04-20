@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 // Import Routes
 const companiesRoute = require('./routes/companies');
 const workersRoute = require('./routes/workers');
+const transactionsRoute = require('./routes/transactions');
 
 // Add Express to App
 const app = express();
@@ -36,5 +37,6 @@ app.use((req, res, next) => {
 // Route Middlewares
 app.use('/api/companies', companiesRoute);
 app.use('/api/workers', workersRoute);
+app.use('/api/transactions', transactionsRoute);
 
 app.listen(4000, () => console.log('Server up and running'))

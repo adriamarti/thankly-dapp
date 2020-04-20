@@ -3,6 +3,7 @@ import {
   GET_WORKERS_REQUESTED,
   REGISTER_WORKERS_REQUESTED,
   ADD_TRANSACTION_REQUESTED,
+  SEND_TOKENS_REQUESTED,
 } from './action-types';
 
 export const getWorkersRequested = (companyId) => ({
@@ -23,4 +24,9 @@ export const registerWorkersRequested = (companyId, email, name, pathwayId, cont
 export const addTransactionRequested = (transactions) => ({
   type: ADD_TRANSACTION_REQUESTED,
   transactions,
+});
+
+export const sendTokensRequested = (payload) => ({
+  type: SEND_TOKENS_REQUESTED,
+  payload,
 });

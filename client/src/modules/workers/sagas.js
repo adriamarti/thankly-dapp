@@ -15,6 +15,9 @@ import {
   ADD_TRANSACTION_REQUESTED,
   ADD_TRANSACTION_SUCCEEDED,
   ADD_TRANSACTION_FAILED,
+  SEND_TOKENS_REQUESTED,
+  SEND_TOKENS_SUCCEEDED,
+  SEND_TOKENS_FAILED,
 } from './action-types';
 
 const registerWorkerIntoToken = async (companyId, contract, address) => {
@@ -62,8 +65,19 @@ export function* addTransaction({ transactions }) {
   }
 }
 
+export function* sendTokens({ payload }) {
+  try {
+    const transactions = yield call(POST, `transactions`, payload);
+    yield put({ type: SEND_TOKENS_SUCCEEDED, transactions });
+  } catch (error) {
+    console.log(error)
+    yield put({ type: SEND_TOKENS_FAILED, error });
+  }
+}
+
 export default function* getWorkersSaga() {
   yield takeLatest(GET_WORKERS_REQUESTED, getWorkers);
   yield takeLatest(REGISTER_WORKERS_REQUESTED, registerWorker);
   yield takeLatest(ADD_TRANSACTION_REQUESTED, addTransaction);
+  yield takeLatest(SEND_TOKENS_REQUESTED, sendTokens);
 }

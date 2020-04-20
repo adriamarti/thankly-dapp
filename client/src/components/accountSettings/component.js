@@ -25,6 +25,8 @@ const Component = () => {
     const password = getFieldValue('password');
 
     // Simulate success signup
+    console.log('email:', email)
+    console.log('password:', password)
     setIsSuccessRegistered(true);
   };
 

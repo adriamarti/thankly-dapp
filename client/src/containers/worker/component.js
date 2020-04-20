@@ -7,6 +7,7 @@ import Sider from '../../components/sider'
 import Employees from '../../components/employees'
 import Transactions from '../../components/transactions';
 import WorkerTokens from '../../components/cards/workerTokens';
+import SendTokensBox from '../../components/sendTokensBox'
 
 import 'antd/dist/antd.css'
 
@@ -27,6 +28,7 @@ const Component = ({ id, getCompany, getWorkers, companyId, address, getToken, c
         <Paragraph>
           This is the dashboard of the employee. Start interacting with your team mates. Does someone did outstanding work that helped you or your team somehow? Don hesitate to give thanks to him.
         </Paragraph>
+        <SendTokensBox />
         <Tabs defaultActiveKey="1">
           <TabPane tab="Colleagues" key="1">
             <Employees />
