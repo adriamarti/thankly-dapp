@@ -30,8 +30,6 @@ export const getToken = async (contract, address, workerId = null) => {
     const { name, symbol, totalSupplied, totalTransfered, totalBurned } = token;
 
     return { name, symbol, totalSupplied, totalTransfered, totalBurned };
-
-    return token;
   } catch(err) {
     throw new Error(err);
   }

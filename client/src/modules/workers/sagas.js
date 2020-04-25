@@ -18,11 +18,16 @@ import {
   SEND_TOKENS_REQUESTED,
   SEND_TOKENS_SUCCEEDED,
   SEND_TOKENS_FAILED,
+  EDIT_WORKERS_REQUESTED,
+  EDIT_WORKERS_SUCCEEDED,
+  EDIT_WORKERS_FAILED,
 } from './action-types';
 
-const registerWorkerIntoToken = async (companyId, contract, address) => {
+const registerWorkerIntoToken = async ({ companyId, contract, address }) => {
   try {
-    await contract.methods.registerWorker(companyId).send({ from: address })
+    const tx = await contract.methods.registerWorker(companyId).send({ from: address })
+
+    return tx;
   } catch(err) {
     throw err;
   }
@@ -40,16 +45,11 @@ export function* getWorkers({ companyId }) {
 
 export function* registerWorker({ companyId, email, name, pathwayId, contract, address }) {
   console.log(companyId, email, name, pathwayId, contract, address)
-  let isRegisteredIntoDB = false;
   try {
     const data = yield call(POST, `workers/pre-register`, { companyId, email, name, pathwayId });
-    isRegisteredIntoDB = true;
-    registerWorkerIntoToken(Web3.utils.toHex(data._id), contract, address)
+    yield call(registerWorkerIntoToken, { companyId: Web3.utils.toHex(data._id), contract, address });
     yield put({ type: REGISTER_WORKERS_SUCCEEDED, data });
   } catch (error) {
-    if (isRegisteredIntoDB) {
-      // @TODO remove registered worker if fails something 
-    }
     console.log(error)
     yield put({ type: REGISTER_WORKERS_FAILED, error });
   }
@@ -75,9 +75,21 @@ export function* sendTokens({ payload }) {
   }
 }
 
+export function* editWorker(payload) {
+  const { _id, email, name, pathwayId } = payload
+  try {
+    const data = yield call(PUT, `workers/${_id}`, { name, email, pathwayId });
+    yield put({ type: EDIT_WORKERS_SUCCEEDED, data });
+  } catch (error) {
+    console.log(error)
+    yield put({ type: EDIT_WORKERS_FAILED, error });
+  }
+}
+
 export default function* getWorkersSaga() {
   yield takeLatest(GET_WORKERS_REQUESTED, getWorkers);
   yield takeLatest(REGISTER_WORKERS_REQUESTED, registerWorker);
   yield takeLatest(ADD_TRANSACTION_REQUESTED, addTransaction);
   yield takeLatest(SEND_TOKENS_REQUESTED, sendTokens);
+  yield takeLatest(EDIT_WORKERS_REQUESTED, editWorker);
 }

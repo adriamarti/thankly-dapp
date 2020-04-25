@@ -43,7 +43,7 @@ const Component = ({ getEthereumAddress }) => {
           </Row>
         </RegisterWrapper>
       </StyledContent>
-      <Footer style={{ textAlign: 'center' }}>Created by Adrià Martí - adria.marti.blasco@gmail.com</Footer>
+      <Footer style={{ textAlign: 'center', position: 'absolute', bottom: '10px', width: '100%' }}>Created by Adrià Martí - adria.marti.blasco@gmail.com</Footer>
     </Layout>
   );
 }

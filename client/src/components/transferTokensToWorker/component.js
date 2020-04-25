@@ -85,7 +85,7 @@ const Component = ({ updateToken, addTransaction, id, workerId, contract, addres
         onCancel={() => closeModal()}
         footer={[
           <Button key="confirm" type="primary" disabled={isSuccessTransfered} loading={isProcessingTransaction} onClick={() => handleSubmit()}>
-            Create Token
+            Tranfer Tokens
           </Button>,
         ]}
       >

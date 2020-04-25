@@ -4,12 +4,12 @@ import { withRouter } from 'react-router-dom';
 import { compose } from 'redux';
 import Component from './component';
 import { signInRequested } from '../../modules/signIn/action-creators';
-import { getUser } from '../../modules/signIn/selectors';
 import { getSelectedAddress } from '../../modules/ethereum/selectors';
+import { getRequestStatus } from '../../root/requests/selectors';
 
 const mapStateToProps = (state) => ({
-  user: getUser(state),
   ethereumAddress: getSelectedAddress(state),
+  requestStatus: getRequestStatus(state, 'SIGN_IN_REQUESTED'),
 });
 
 const mapDispatchToProps = (dispatch) => ({

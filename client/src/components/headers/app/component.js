@@ -1,7 +1,7 @@
 // External Dependencies
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Menu, Popover, Button, Typography } from 'antd';
+import { Button, Typography } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
 
 import 'antd/dist/antd.css'
@@ -39,7 +39,7 @@ const Component = ({ token, user }) => {
         {getTokenData()}
         <User>
           <UserName>{user.name}</UserName>
-          <Button type="primary" shape="circle" icon={<LogoutOutlined />} />
+          <Button type="primary" shape="circle" icon={<LogoutOutlined />} onClick={() => document.location.href="/"} />
         </User>
       </Navigation>
     </Header>

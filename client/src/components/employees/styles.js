@@ -32,6 +32,20 @@ const ListItem = styled(List.Item)`
   border-bottom: 1px solid #d9d9d9 !important;
 `;
 
+const ListItemMeta = styled(List.Item.Meta)`
+  &.inactive {
+    & .ant-avatar {
+      background-color: #ff4d4f !important;
+    }
+  }
+
+  &.active {
+    & .ant-avatar {
+      background-color: #7dd068 !important;
+    }
+  }
+`
+
 const Actions = styled.div`
   display: flex;
   & div:first-child {
@@ -43,6 +57,7 @@ export default {
   ThanklyIcon,
   ThanklyLogo,
   LogoMenuItem,
+  ListItemMeta,
   StyledMenuItem,
   ListItem,
   Actions,

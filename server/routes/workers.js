@@ -115,12 +115,14 @@ router.put('/:id', async (req, res) => {
 
     // Update Worker data
     const updatedData = Object.assign(worker, req.body);
-    const updatedWorker = await Worker.updateOne(
+    await Worker.updateOne(
       { _id: req.params.id },
       { $set: updatedData },
     );
 
-    return res.status(200).send(updatedWorker);
+    const { _id, name, pathwayId, active, email, transactions } = updatedData
+
+    return res.status(200).send({ _id, name, pathwayId, active, email, transactions });
 
   } catch(err) {
     return res.status(400).send(err);

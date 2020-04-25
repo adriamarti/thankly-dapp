@@ -9,12 +9,15 @@ import StyledComponents from './styles';
 
 const { StyledForm, SignInButton, RadioGroup, Text } = StyledComponents;
 
-const Component = ({ user, signIn, ethereumAddress, history }) => {
+const Component = ({ signIn, ethereumAddress, history, requestStatus }) => {
+  console.log(requestStatus)
   const [signInForm] = Form.useForm();
   const [typeOfUser, setTypeOfUsers] = useState('companies');
   const [showMetamaskWarning, setShowMetamaskWarning] = useState(false);
   const [isProcessingSignIn, setIsProcessingSignIn] = useState(false);
   const [buttonText, setButtonText] = useState('Sign In');
+  const [fetchingError, setFetchingError] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(true);
 
   const showWarning = () => {
     if (!ethereumAddress && typeOfUser === 'companies') {
@@ -29,11 +32,22 @@ const Component = ({ user, signIn, ethereumAddress, history }) => {
   }, [ethereumAddress, typeOfUser])
 
   useEffect(() => {
-    if (user._id) {
+    const { status } = requestStatus
+    if (status === 'SUCCESSFUL') {
       const redirectPath = typeOfUser === 'companies' ? 'company' : 'worker';
       history.push(`/${redirectPath}`)
     }
-  }, [user]);
+
+    if (status === 'FETCHING') {
+      toggleSignInButtonStatus()
+    }
+
+    if (status === 'FAILURE') {
+      setFetchingError(true);
+      toggleSignInButtonStatus();
+      signInForm.resetFields();
+    }
+  }, [requestStatus])
 
   const toggleSignInButtonStatus = () => {
     setIsProcessingSignIn(!isProcessingSignIn);
@@ -46,7 +60,6 @@ const Component = ({ user, signIn, ethereumAddress, history }) => {
   }
 
   const onFinish = () => {
-    toggleSignInButtonStatus()
     const { getFieldValue } = signInForm;
     const email = getFieldValue('email');
     const password = getFieldValue('password');
@@ -56,8 +69,19 @@ const Component = ({ user, signIn, ethereumAddress, history }) => {
     }
   }
 
+  const onValuesChange = () => {
+    const { getFieldValue } = signInForm;
+    const email = getFieldValue('email');
+    const password = getFieldValue('password');
+
+    if (email && email.length > 5 && password) {
+      setIsDisabled(false);
+    }
+  }
+
   return (
-    <StyledForm name="sign_in" form={signInForm} onFinish={onFinish}>
+    <StyledForm name="sign_in" form={signInForm} onFinish={onFinish} onValuesChange={onValuesChange}>
+      {fetchingError && <Text type="danger">Something went wrong</Text>}
       {showMetamaskWarning && <Text type="warning">You need to enable Metamask</Text>}
       <RadioGroup onChange={onChangeTypeOfUser} value={typeOfUser}>
         <Radio value="companies">Company</Radio>
@@ -69,7 +93,7 @@ const Component = ({ user, signIn, ethereumAddress, history }) => {
       <Form.Item name="password" rules={[{ required: true, message: 'Please input your password!' }]}>
         <Input.Password placeholder="Password" />
       </Form.Item>
-      <SignInButton type="primary" htmlType="submit" loading={isProcessingSignIn}>
+      <SignInButton type="primary" htmlType="submit" loading={isProcessingSignIn} disabled={isDisabled}>
         {buttonText}
       </SignInButton>
     </StyledForm>
@@ -77,7 +101,7 @@ const Component = ({ user, signIn, ethereumAddress, history }) => {
 }
 
 Component.propTypes = {
-  user: PropTypes.object.isRequired,
+  requestStatus: PropTypes.object.isRequired,
   signIn: PropTypes.func.isRequired,
   ethereumAddress: PropTypes.string
 };

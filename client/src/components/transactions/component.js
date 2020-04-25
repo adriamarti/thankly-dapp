@@ -33,7 +33,9 @@ const Component = ({ companyName, transactions, workers, user, location }) => {
   const getTransactionsFromWorkers = () => {
     let transactions = [];
     workers.forEach((worker) => {
-      transactions.push(...worker.transactions);
+      if (worker.transactions && worker.transactions.length > 0) {
+        transactions.push(...worker.transactions);
+      }
     })
 
     return transactions.filter((transaction, index, self) =>

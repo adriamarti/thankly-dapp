@@ -9,7 +9,7 @@ import 'antd/dist/antd.css'
 
 import StyledComponents from './styles';
 
-const { ListItem, Actions } = StyledComponents;
+const { ListItem, Actions, ListItemMeta } = StyledComponents;
 
 const Component = ({ id, workers, pathways, pathwaysFromCompany, location }) => {
   const avatar = (name) => {
@@ -71,7 +71,8 @@ const Component = ({ id, workers, pathways, pathwaysFromCompany, location }) => 
       dataSource={getWorkersToRender()}
       renderItem={item => (
         <ListItem>
-          <List.Item.Meta
+          <ListItemMeta
+            className={item.active ? 'active' : 'inactive'}
             avatar={avatar(item.name)}
             title={`${item.name} | ${item.email}`}
             description={getPathway(item.pathwayId).name}
@@ -79,7 +80,7 @@ const Component = ({ id, workers, pathways, pathwaysFromCompany, location }) => 
           {
             !userLoggedIsWorker() &&
             <Actions>
-              <EditWorker />
+              <EditWorker workerData={item}/>
               <TransferTokensToWorker amount={getPathway(item.pathwayId).amount} workerId={item._id}/>
             </Actions>
           }

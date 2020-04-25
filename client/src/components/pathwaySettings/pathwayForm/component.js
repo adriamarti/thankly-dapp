@@ -20,11 +20,6 @@ const Component = ({ addPathway, companyId, name, amount }) => {
     const amount = getFieldValue('amount');
 
     addPathway(companyId, name, amount);
-
-    // Simulate success signup
-    // console.log('email:', email)
-    // console.log('password:', password)
-    // setIsSuccessRegistered(true);
   };
 
 

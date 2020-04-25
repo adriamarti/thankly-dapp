@@ -1,91 +1,86 @@
+# Thankly Dapp (PoC)
+This is a Human Resources software solution that is focused on engage the team work via direct recogniztion of well done work between the employees of the company. The company transfer tokens to their employees who later can be transfered to other team mates and at the end the received tokens can be exchanged for vouchers.
+
+> :construction_worker: **This project is under construction.**
+
+## Run the project locally
+
 ### Requirements
 
-Install Ganache, and Truffle
-
+Install Ganache, and Truffle. You can use either the ganache CLI or the ganache UI software.
 ```bash
 npm install -g truffle@5.0.41 ganache-cli@6.7.0
 ```
+If you are going to use the platform as a company you need to have a software to sign ethereum transactions like MetaMask
 
-### Start your local blockchain
-
-In a new terminal window, run your local blockchain:
-
+**Download the project:**
 ```bash
-ganache-cli --deterministic
+git clone https://github.com/adriamarti/thankly-dapp.git
 ```
 
-### Run a Relayer
+### Run the server
 
-We need to deploy a live relayHub, run a Relayer, and then register our Relayer in the relayHub. While we can do each of these steps individually with the gsn-helpers running the command run-relayer will take care of all these steps at once. In a new terminal window in your project folder, (with ganache running, after you restarted it, in another terminal) type:
+The project uses a back end to sign transactions between the employees while the ones from thw company should be signed via a wallet like MetaMask.
 
-```bash
-npx oz-gsn run-relayer --quiet
-```
-
-You should see output similar to the following:
+Once you have cloned the repo navigate to the server folder and run start the server.
 
 ```bash
-Starting relayer
-/Users/dennison/Library/Caches/gsn-nodejs/gsn-relay-v0.1.4
--EthereumNodeUrl [http://localhost:8545](http://localhost:8545/)
--RelayHubAddress 0xd216153c06e857cd7f72665e0af1d7d82172f494
--Port 8090
--Url [http://localhost:8090](http://localhost:8090/)
--GasPricePercent 0
--Workdir /var/folders/pf/8knbxmfd6n3_cn5glssbp5580000gn/T/tmp-17513m3fru4uoIQW8
--DevMode
-Funding GSN relay at [http://localhost:8090](http://localhost:8090/)
-Will wait up to 30s for the relay to be ready
-Relay is funded and ready!
+cd server
+yarn start
 ```
 
-Now we need to redeploy the GSN Starter Kit contract counter.sol remembering to call initialize() at the end of the process (in another terminal)
-
+Install all the dependencies
 ```bash
-oz create
+yarn install
 ```
 
-And follow the `cli` prompts (looks like something like that):
-
+> You need to create a collection into mongo Atlas and paste your credentials into the .env file inside the server folder:
 ```bash
-? Pick a contract to instantiate Counter
-? Pick a network development
-✓ Contract Counter deployed
-All implementations have been deployed
-? Call a function to initialize the instance after creating it? Yes
-? Select which function * initialize(num: uint256, trustedSigner: address)
-? num: uint256: 12
-? trustedSigner: address: 0x1df62f291b2e969fb0849d99d9ce41e2f137006e
-✓ Setting everything up to create contract instances
-✓ Instance created at 0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb
-0xD833215cBcc3f914bD1C9ece3EE7BF8B14f841bb
+DB_CONNECT=mongodb+srv://{acountName}:{password}@cluster0-exasy.mongodb.net/{collectionName}?retryWrites=true&w=majority
 ```
 
-This time when we fund the recipient, we will be funding our smart contract counter.sol on the relayHub we deployed manually with the gsn-helpers. Go ahead and fund your recipient.
+### Run the blockchain locally
 
+Once you have cloned the repo navigate run a private blockchain netwrok with Ganache. Once the private ethereum network is running do:
+
+1. Navigate to the ethereum folder:
 ```bash
-npx oz-gsn fund-recipient --recipient <<Your contract address here>>
+cd ethereum
 ```
-
-### Testing Smart Contracts
-
-Truffle can run tests written in Solidity or JavaScript against your smart contracts. Note the command varies slightly if you're in or outside of the truffle development console.
-
+2. Install all the dependencies
 ```bash
-// inside the development console.
-test
-
-// outside the development console..
-truffle test
+yarn install
+```
+3. Compile the smart contracts
+```bash
+truffle compile
+```
+4. Deploy the contracts
+```bash
+truffle deploy
+```
+5. Migrate the contracts
+```bash
+truffle migrate
+```
+6. You need to set the private code of the trustedd address used during the deployemt into the .env file from the server folder
+```bash
+PRIVATE_KEY={privateKey}
 ```
 
-### Client UI
+### Run the client
 
-Truffle can run tests written in Solidity or JavaScript against your smart contracts. Note the command varies slightly if you're in or outside of the truffle development console. In a new terminal window, in the client directory, run the React app:
+The client is developed using React, Redux, Sagas. To run the client you need to:
 
+1. Navigate to the ethereum folder:
 ```bash
 cd client
-npm run start
 ```
-
-Note: check https://forum.openzeppelin.com/t/advanced-gsn-gsnrecipientsignature-sol/1414 for more details about what it's implemented.
+2. Install all the dependencies
+```bash
+yarn install
+```
+3. Deploy the contracts
+```bash
+yarn start
+```

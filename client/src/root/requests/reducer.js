@@ -5,10 +5,13 @@ import { omit } from 'lodash';
 import { fetching, successful, failure } from './status';
 
 // modules
-import { SIGN_IN_REQUESTED} from '../../modules/signIn/action-types';
+import { SIGN_IN_REQUESTED } from '../../modules/signIn/action-types';
+import { SEND_TOKENS_REQUESTED, EDIT_WORKERS_REQUESTED } from '../../modules/workers/action-types';
 
 const monitoredRequests = [
   { action: SIGN_IN_REQUESTED },
+  { action: SEND_TOKENS_REQUESTED },
+  { action: EDIT_WORKERS_REQUESTED }
 ].map((request) => (request.requestIdentifier ? request : { ...request, requestIdentifier: () => 'none' }));
 
 const INITIAL_STATE = {};
@@ -19,10 +22,8 @@ function changeStateByIdentifier(requestName, identifier, status, payload) {
   return {
     [requestName]: {
       $set: {
-        [identifier]: {
-          status,
-          payload,
-        },
+        status,
+        payload,
       },
     },
   };

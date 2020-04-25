@@ -34,7 +34,7 @@ router.post('/', async (req, res) => {
     const trustedAddress = '0x3459ac87be3669F0ae29e37968d6476F79017b9f';
     const privateKey = new Buffer(process.env.PRIVATE_KEY, 'hex');
     const contractABI = ThanklyToken.abi;
-    const contractAddress = '0xEB829Fe5Bd0A9e4827e9acFE0e894657a9eDb52a';
+    const contractAddress = '0xbb3aC9e32b6d9ddD04E730733F4A1F593461DC49';
     
     // creating contract object
     const contract = new web3js.eth.Contract(contractABI, contractAddress);

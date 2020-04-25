@@ -19,7 +19,7 @@ const App = ({ getEthereumAddress, getEthereumNetwork, setSmartContract }) => {
 
     // Set ThanklyToken Smart Contract Interface
     const web3 = new Web3(ethereum);
-    const thanklyTokenContractAddress = '0xEB829Fe5Bd0A9e4827e9acFE0e894657a9eDb52a';
+    const thanklyTokenContractAddress = '0xbb3aC9e32b6d9ddD04E730733F4A1F593461DC49';
     setSmartContract(web3, thanklyTokenContractAddress)
 
     // Subscribe on account change

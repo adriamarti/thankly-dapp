@@ -25,14 +25,14 @@ const Component = ({ token, pathways, registerWorker, id, contract, address, wor
     setEditWorkerModalVisible(isVisible);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsProcessingRegistration(true);
     const { getFieldValue } = registerWorkerForm;
     const name = getFieldValue('name');
     const email = getFieldValue('email');
 
     try {
-      registerWorker(id, email, name, selectedPathway, contract, address);
+      await registerWorker(id, email, name, selectedPathway, contract, address);
       setRegisteredEmail(email);
       setIsSuccessRegistered(true);
       setIsProcessingRegistration(false);
@@ -84,6 +84,13 @@ const Component = ({ token, pathways, registerWorker, id, contract, address, wor
     />
   )
 
+  const closeModal = () => {
+    registerWorkerForm.resetFields();
+    toggleModalVisibility(false);
+    setIsSuccessRegistered(false);
+    setIsProcessingRegistration(false);
+  }
+
   return (
     <div>
       <Button type="primary" icon={<UserAddOutlined />} disabled={isButtonDisabled} onClick={() => toggleModalVisibility(true)}>
@@ -92,9 +99,9 @@ const Component = ({ token, pathways, registerWorker, id, contract, address, wor
       <Modal
         title="Here you can edit the employee details"
         visible={editWorkerModalVisible}
-        onCancel={() => toggleModalVisibility(false)}
+        onCancel={closeModal}
         footer={[
-          <Button key="cancel" onClick={() => toggleModalVisibility(false)}>
+          <Button key="cancel" onClick={closeModal}>
             Cancel
           </Button>,
           <Button key="confirm" type="primary" loading={isProcessingRegistration} disabled={isSuccessRegistered} onClick={() => handleSubmit()}>

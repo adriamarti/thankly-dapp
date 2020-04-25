@@ -8,6 +8,8 @@ import {
   requestIsDone,
 } from './status';
 
+export const getRequestStatus = (state, actionType) => ((state.requestsStatuses[camelCase(actionType.replace('_REQUESTED', ''))] || {}))
+
 const getObjectOfAsyncAction = (
   state,
   actionType,
