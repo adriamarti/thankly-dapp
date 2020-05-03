@@ -23,7 +23,7 @@ contract Employee is Initializable {
     uint256 burnableTokens;
   }
 
-  // The bytes32 will be the hashed email employee with the company email
+  // The bytes32 will be the hashed email employee
   mapping (bytes32 => Employee) public employee;
 
   //-------------------------------- //
@@ -82,7 +82,6 @@ contract Employee is Initializable {
   // SETTERS
   //-------------------------------- //
   
-  // Initializer function (replaces constructor)
   /**
    * @dev Initializer function (replaces constructor)
    * @param _version Version of the deployed contract

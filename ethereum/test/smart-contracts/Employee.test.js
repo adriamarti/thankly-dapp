@@ -1,13 +1,7 @@
-const {
-  BN,
-  expectEvent,
-  expectRevert,
-  balance
-} = require('openzeppelin-test-helpers');
+const { expectRevert } = require('openzeppelin-test-helpers');
 const Web3 = require('Web3');
 const faker = require('faker')
 const Employee = artifacts.require('Employee');
-const web3 = new Web3(Web3.givenProvider || 'ws://127.0.0.1:7545');
 
 contract.only('Employee Smart Contract', (accounts) => {
   let employee;
